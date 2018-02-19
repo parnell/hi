@@ -1,0 +1,5 @@
+
+#ifndef HI_GLOBAL_INCLUDES_H
+#define HI_GLOBAL_INCLUDES_H
+
+#endif //HI_GLOBAL_INCLUDES_H

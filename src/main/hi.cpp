@@ -2,11 +2,11 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-// Simple test, does not use gmock
 TEST(Dummy, foobar)
 {
 EXPECT_EQ(1, 1);
 }
+
 
 void rankf(int rank){
     printf("  RANK=%d\n", rank);
