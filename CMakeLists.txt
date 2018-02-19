@@ -3,24 +3,24 @@ project(hi)
 
 set(CMAKE_CXX_STANDARD 17)
 
-find_package(MPI REQUIRED)
-if (MPI_FOUND)
-    include_directories(SYSTEM ${MPI_INCLUDE_PATH})
-#    set(CMAKE_C_COMPILER /usr/local/bin/mpicc)
-#    set(CMAKE_CXX_COMPILER /usr/local/bin/mpic++)
 
-    #    set(CMAKE_CXX_COMPILE_FLAGS ${CMAKE_CXX_COMPILE_FLAGS} ${MPI_COMPILE_FLAGS})
-#    set(CMAKE_CXX_LINK_FLAGS ${CMAKE_CXX_LINK_FLAGS} ${MPI_LINK_FLAGS})
-else (MPI_FOUND)
-    message(SEND_ERROR "This application cannot compile without MPI")
-endif (MPI_FOUND)
+include(MPI.cmake) ###### MPI
 
-###### Google-Test
-include(GTest.cmake)
+include(Boost.cmake) ###### Boost
 
-add_executable(hi src/main.cpp)
+include(GTest.cmake) ###### Google-Test
 
-target_link_libraries(hi gtest gmock_main)
-target_link_libraries(hi ${MPI_LIBRARIES})
 
-add_test(NAME example_test COMMAND hi)
+set(PROGRAMS src/main/hi.cpp src/test/testall.cpp)
+
+set(SOURCE_FILES src/main/utils/MasterQ.cpp src/main/utils/MasterQ.h src/main/utils/WorkItem.cpp src/main/utils/WorkItem.h src/main/utils/vecutil.cpp src/main/debug.h src/main/datastructures/data.h src/main/global_includes.h)
+
+foreach(program ${PROGRAMS})
+    get_filename_component(progname ${program} NAME_WE)
+    add_executable(${progname} ${SOURCE_FILES} ${program})
+    target_link_libraries(${progname} gtest gtest_main)
+    target_link_libraries(${progname} ${MPI_LIBRARIES})
+    target_link_libraries(${progname} ${Boost_LIBRARIES} )
+endforeach(program)
+
+add_test(NAME Dummy COMMAND hi)

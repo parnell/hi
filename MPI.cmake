@@ -1,10 +1,11 @@
 
-cmake_minimum_required(VERSION 2.8)
-
-find_package(Boost REQUIRED)
-
-INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
+find_package(MPI REQUIRED)
+if (MPI_FOUND)
+    include_directories(SYSTEM ${MPI_INCLUDE_PATH})
+else (MPI_FOUND)
+    message(SEND_ERROR "This application cannot compile without MPI")
+endif (MPI_FOUND)
 
 
 ### put this below executable
-#TARGET_LINK_LIBRARIES( myprog LINK_PUBLIC ${Boost_LIBRARIES} )
+#target_link_libraries(${progname} ${MPI_LIBRARIES})
