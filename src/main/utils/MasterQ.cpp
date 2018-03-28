@@ -1,3 +1,3 @@
 // $(NAME)
 
-#include "MasterQ.h"
+#include "MasterQ.hpp"

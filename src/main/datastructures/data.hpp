@@ -5,12 +5,13 @@
 #include <string>
 #include <vector>
 
-#include "../global_includes.h"
+#include "../dtypes.hpp"
 
 class Data {
+
 protected:
     size_t serial_number_;
-    dist_type dist_;
+    dtype dist_;
 
 public:
     Data(size_t s) : serial_number_(s) {}
@@ -18,17 +19,16 @@ public:
 
     virtual std::string toString() const = 0;
 
-    void setDist(dist_type t) { dist_ = t; }
-    dist_type getDist() const { return dist_; }
+    virtual void setDist(dtype t) { dist_ = t; }
+
+    virtual dtype getDist() const { return dist_; }
 
     virtual size_t size() const = 0;
 
-    virtual dist_type d(const Data* other) const = 0;
+    virtual dtype d(const Data* other) const = 0;
 
     virtual bool operator ==(const Data& other) const {
-        if (serial_number_ == other.serial_number_)
-            return true;
-        return false;
+        return serial_number_ == other.serial_number_;
     }
 
     virtual bool operator <(const Data& other) const {

@@ -8,6 +8,18 @@
 
 namespace vecutil{
 
+    // Functor for deleting pointers in vector.
+    template<class T> class DeleteVector {
+    public:
+        // Overloaded () operator.
+        // This will be called by for_each() function.
+        bool operator()(T x) const {
+            // Delete pointer.
+            delete x;
+            return true;
+        }
+    };
+
     template <typename T>
     std::vector<T> split(std::vector<T>& v, const int nparts, const int iteration=0) {
         int workper = v.size() / nparts;

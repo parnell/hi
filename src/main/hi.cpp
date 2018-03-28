@@ -6,54 +6,111 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/mpi/collectives.hpp>  /// for gatherv
 #include <numeric>
-#include "utils/WorkItem.h"
+#include "datastructures/rm/WorkItem.hpp"
 #include "utils/vecutil.hpp"
+#include "datastructures/rm/Worker.hpp"
+#include "datastructures/data.hpp"
+#include "datastructures/Euc.hpp"
+#include "datastructures/rm/Master.hpp"
+#include "dtypes.hpp"
+#include "globals.hpp"
+#include "datastructures/hi/HIBuildItem.hpp"
+#include "datastructures/hi/HIJob.hpp"
+#include "datastructures/rm/ReturnItem.hpp"
+#include "datastructures/min/MinJob.hpp"
+#include "datastructures/Timer.hpp"
+#include "utils/stringutils.hpp"
 
 namespace mpi = boost::mpi;
 
-void rankf(int rank){
-    printf("  RANK=%d\n", rank);
-}
-typedef std::vector<int>::size_type sizet;
+BOOST_CLASS_EXPORT_GUID(WorkItem, "WorkItem");
+BOOST_CLASS_EXPORT_GUID(HIBuildItem, "HIBuildItem");
+BOOST_CLASS_EXPORT_GUID(MinItem, "MinItem");
+
+
+//typedef std::unique_ptr<Euc<int>> Dat;
 
 int main(int argc, char** argv) {
-    const int tag = 337;
+    unsigned int nthreads = std::thread::hardware_concurrency();
+    std::cout << "Starting argc=" << argc << std::endl;
+    for (int k = 0; k < argc; ++k) {
+        std::cout << argv[k] << " ";
+    }
+    std::cout << std::endl;
+    std::string filename;
+    std::string queryFilename;
+
+    float radius = 0.4;
+    std::string indexName = "data";
+    int c;
+    int knn = -1;
+    bool build = true;
+    bool query = true;
+
+    int dims=-1;
+    int nclusters = -1;
+    int size = -1;
+
+    while((c =  getopt(argc, const_cast<char * const * >(argv), "bk:y:c:s:d:r:i:q:n:")) != EOF){
+        switch (c){
+            case 'b': build=true; break;
+            case 'k': knn=atoi(optarg); break;
+            case 'y': {
+//                int t = atoi(optarg);
+//                if (t < 0 || t > IndexType::LAST_TYPE) {
+//                    fprintf(stderr, "Index Type %d is not defined\n", t);
+//                }
+//                index_type = static_cast<IndexType>(t);
+            }
+                break;
+            case 'i': filename = optarg; break;
+            case 'q': queryFilename = optarg; break;
+            case 'n': indexName= optarg; break;
+            case 'c': nclusters=atoi(optarg); break;
+            case 's': size=atoi(optarg); break;
+            case 'd': dims=atoi(optarg); break;
+            case 'r': radius = (float) atof(optarg); break;
+            case ':': /// No operand
+                fprintf(stderr,"Option -%c requires an operand\n", optopt);
+                return -1;
+            default: break;
+        }
+    }
+    if (build){
+        /// Verify build options
+    }
+
+    if (query){
+        /// Verify query options
+    }
+
     mpi::environment env;
     mpi::communicator world;
-    const int size = world.size();
-    std::cout << "rank=" << world.rank() << "\tsize=" << size << std::endl;
-    std::vector<WorkItem> items(10);
-    WorkItem item;
-    std::vector<int> v(100) ;
-    std::vector<int> sv(7) ;
-    std::iota (std::begin(v), std::end(v), 0);
-    std::vector<int> sizes;
-    bool hasMoreWork = true;
-    std::vector<int> my_data;
+    const int wsize = world.size();
+    std::cout << "rank=" << world.rank() << "\tsize=" << wsize << "  nthreads=" << nthreads << std::endl;
+    /// Build Job
+//    std::string n = sutil::sformat("%d", world.rank());
+    Timer t(sutil::sformat("%d", world.rank()));
 
     if (world.rank() == 0) {
-        for (int i =0; i<size-1;i++) {
-            std::vector<int> ret = vecutil::split<int>(v, size-1, i);
-            std::cout << "Master     sending " << ret.size() << std::endl;
-            world.send(i+1, tag, ret);
-            sizes.push_back((int) ret.size());
+//        HIJob j;
+        MinJob j(10000000, 4);
+        if (build && query) {
+//            HIBuildItem* bi = new HIBuildItem(j.id);
+//            j.addWorkItem(*bi);
+        } else if (build){
+//            m.build();
+        } else if (query){
+//            m.query();
         }
-        std::vector< std::vector<int> > all_numbers;
-        std::vector<int> mysend;
-        gather(world, mysend, all_numbers, 0);
-        for (auto i : all_numbers){
-            std::cout << " i = " << i.size() << std::endl;
-        }
-
+        /// create master
+        Master<Dat> m;
+        m.addJob(j);
+        m.runjobs();
     } else {
-        std::vector<int> ritems;
-        WorkItem ritem;
-        std::string msg;
-        world.recv(0, tag, ritems);
-        std::cout << " Slave " << world.rank() << "  ############ , " << ritems.size() << std::endl;
-
-        std::cout.flush();
-        gather(world, ritems, 0);
+        /// Create worker
+        Worker m;
+        m.run();
     }
     return 0;
 }

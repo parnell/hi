@@ -1,0 +1,49 @@
+
+#ifndef HI_JOB_HPP
+#define HI_JOB_HPP
+
+
+#include <queue>
+#include <list>
+#include "WorkItem.hpp"
+
+class Job {
+    static unsigned long njobs;
+protected:
+    std::list<WorkItem*> unfinished;
+
+public:
+    const long id;
+
+    virtual ~Job(){
+        for (auto& pwi: unfinished){
+            if (pwi){
+                delete pwi;
+            }
+        }
+    }
+
+    Job() : id(njobs){
+        njobs++;
+    }
+
+    virtual std::list<WorkItem*>& getWorkItems();
+
+    virtual void addWorkItem(WorkItem& workItem);
+
+
+    virtual std::string toString() const{
+        std::stringstream str;
+        str << "[Job " << id << "]";
+        return str.str();
+    };
+
+
+    friend std::ostream& operator<<(std::ostream& os, Job const& o) {
+        return os << o.toString();
+    }
+
+};
+
+
+#endif //HI_JOB_HPP

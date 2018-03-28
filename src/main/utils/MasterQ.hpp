@@ -1,7 +1,7 @@
 #ifndef HI_MASTERQ_H
 #define HI_MASTERQ_H
 #include <queue>
-#include "WorkItem.h"
+#include "../datastructures/rm/WorkItem.hpp"
 #include "gtest/gtest.h"
 
 TEST(Dummy, foobar)
