@@ -13,7 +13,11 @@ include(GTest.cmake) ###### Google-Test
 include(PatchOpenMPApple.cmake) ###### MPI
 
 
-link_directories(/usr/local/include/flann)
+if(APPLE)
+    link_directories(/usr/local/include/flann)
+elseif(UNIX)
+    link_directories($ENV{HOME}/usr/local/flann-1.8.4/)
+endif()
 
 include_directories($ENV{HOME}/src/LSHBOX/include)
 
