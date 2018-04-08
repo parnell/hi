@@ -14,13 +14,15 @@
 
 #include <queue>
 #include "../../utils/vecutil.hpp"
-#include "../../dtypes.hpp"
 #include "../hi/HIBuildItem.hpp"
+//#include "../../utils/stringutils.hpp"
+
+#include "WorkItem.hpp"
+#include "../../dtypes.hpp"
+#include "../Timer.hpp"
 #include "Job.hpp"
 #include "JobHandler.hpp"
 #include "Worker.hpp"
-#include "../Timer.hpp"
-#include "../../utils/stringutils.hpp"
 
 #include <chrono> // sleeping
 #include <thread> // sleeping
@@ -74,7 +76,7 @@ public:
                 }
             }
             std::this_thread::yield();
-            for_each(allitems.begin(), allitems.end(), vecutil::DeleteVector<WorkItem*>());
+            std::for_each(allitems.begin(), allitems.end(), vecutil::DeleteVector<WorkItem*>());
             allitems.clear();
             sends.remove_if([](mpi::request req){ return req.test(); });
 

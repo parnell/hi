@@ -2,8 +2,6 @@
 #ifndef HI_DTYPES_HPP
 #define HI_DTYPES_HPP
 
-#define P_CPP17 0
-
 
 typedef float dtype;
 #define dtype_f	"%.4f"

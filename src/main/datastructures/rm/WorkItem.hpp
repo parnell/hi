@@ -23,12 +23,12 @@ protected:
     int jobid;
 
 public:
-    WorkItem(): id(nitems), jobid(-1){
-        nitems++;
+    WorkItem(): id(nitems++), jobid(-1){
     }
-    WorkItem(int jobid) : id(nitems), jobid(jobid) {
-        nitems++;
+
+    WorkItem(int jobid) : id(nitems++), jobid(jobid) {
     }
+
     virtual void work(){
         std::cout << "       work() " << this->toString() << std::endl;
     };

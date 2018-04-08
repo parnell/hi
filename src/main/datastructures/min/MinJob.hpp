@@ -2,15 +2,15 @@
 #ifndef HI_MINJOB_HPP
 #define HI_MINJOB_HPP
 
-#include "../../dtypes.hpp"
+//#include "../../dtypes.hpp"
 #include <vector>
 #include <numeric>
-#if P_CPP17
+#if __cplusplus >= 201701L
 #include <execution>
 #endif
 #include "../rm/Job.hpp"
 #include "../Timer.hpp"
-
+#include "../../myomp.hpp"
 
 class MinItem : public WorkItem {
     std::vector<int> v;
@@ -37,18 +37,22 @@ public:
         size_t m = 0;
         std::mutex mtx;
         /// Alas it's still too new, c++17 execution is rough to install on Mac or stampede
-#if P_CPP17
+#if __cplusplus >= 201701L
         std::for_each(std::execution::par, std::begin(v), std::end(v), [&](int item) {
             std::lock_guard<std::mutex> guard(mtx);
             m+=item*item*item; // correct
         });
 #else
+        #pragma omp parallel
+        {
+            int thread_id = omp_get_thread_num();
+            std::cout << "Thread number: " << omp_get_thread_num() << std::endl;
+        }
         #pragma omp parallel for
-        for (auto& item : v) {
-//            if (item < m){
-//                m = item;
-//            }
-            m+=item*item*item;
+//        for (auto& item : v) { // doesn't work with openmp
+        for (auto it=v.begin(); it<v.end();++it){
+//            m+=item*item*item;
+            m += (*it)*(*it)*(*it);
         }
 #endif
         std::cout << "searched " << v.size() << "  " << mysize << "  " << m  << std::endl;

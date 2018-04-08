@@ -94,7 +94,7 @@ int main(int argc, char** argv) {
 
     if (world.rank() == 0) {
 //        HIJob j;
-        MinJob j(10000000, 4);
+        MinJob j(100000000, 4);
         if (build && query) {
 //            HIBuildItem* bi = new HIBuildItem(j.id);
 //            j.addWorkItem(*bi);

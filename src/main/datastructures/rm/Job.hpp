@@ -9,11 +9,12 @@
 
 class Job {
     static unsigned long njobs;
+    friend class JobHandler;
 protected:
     std::list<WorkItem*> unfinished;
+    const long id;
 
 public:
-    const long id;
 
     virtual ~Job(){
         for (auto& pwi: unfinished){
@@ -23,9 +24,7 @@ public:
         }
     }
 
-    Job() : id(njobs){
-        njobs++;
-    }
+    Job() : id(njobs++){}
 
     virtual std::list<WorkItem*>& getWorkItems();
 
