@@ -16,6 +16,8 @@ include(Flann.cmake) ###### Flann
 
 include(LSHBox.cmake) ###### LSHBox
 
+include(HDF5.cmake) ###### HDF5
+
 
 set(PROGRAMS src/main/hi.cpp src/test/testall.cpp)
 
@@ -46,11 +48,12 @@ foreach(program ${PROGRAMS})
     target_link_libraries(${progname} PUBLIC gtest gtest_main)
     target_link_libraries(${progname} PUBLIC ${MPI_LIBRARIES})
     target_link_libraries(${progname} PUBLIC ${Boost_LIBRARIES} )
-    target_link_libraries(${progname} PUBLIC ${_hdf5_libs})
+#    target_link_libraries(${progname} PUBLIC ${_hdf5_libs})
     if(${OpenMP_FOUND})
         target_link_libraries(${progname} PUBLIC ${OpenMP_CXX_LIBRARIES} ${PROJECT_LINK_LIBS})
         target_link_libraries(${progname} PUBLIC OpenMP::OpenMP_CXX)
     endif()
+    target_link_libraries(${progname} PUBLIC ${FLANN_LIBRARIES})
 endforeach(program)
 
 foreach(program ${T2PROGRAMS})
@@ -59,7 +62,6 @@ foreach(program ${T2PROGRAMS})
     target_link_libraries(${progname} PUBLIC gtest gtest_main)
     target_link_libraries(${progname} PUBLIC ${MPI_LIBRARIES})
     target_link_libraries(${progname} PUBLIC ${Boost_LIBRARIES} )
-    target_link_libraries(${progname} PUBLIC ${_hdf5_libs})
     if(${OpenMP_FOUND})
         target_link_libraries(${progname} PUBLIC ${OpenMP_CXX_LIBRARIES} ${PROJECT_LINK_LIBS})
         target_link_libraries(${progname} PUBLIC OpenMP::OpenMP_CXX)
@@ -74,7 +76,6 @@ foreach(program ${T3PROGRAMS})
     target_link_libraries(${progname} PUBLIC gtest gtest_main)
     target_link_libraries(${progname} PUBLIC ${MPI_LIBRARIES})
     target_link_libraries(${progname} PUBLIC ${Boost_LIBRARIES} )
-    target_link_libraries(${progname} PUBLIC ${_hdf5_libs})
 endforeach(program)
 
 add_test(NAME Dummy COMMAND hi)

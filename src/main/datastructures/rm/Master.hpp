@@ -39,7 +39,7 @@ class Master {
     mpi::communicator world;
 
     JobHandler jh;
-    std::mutex mtx;
+//    std::mutex mtx;
 
 public:
     Master(){

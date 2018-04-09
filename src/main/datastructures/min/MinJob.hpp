@@ -35,10 +35,10 @@ public:
         std::iota(v.begin(), v.end(), 0);
 
         size_t m = 0;
-        std::mutex mtx;
         /// Alas it's still too new, c++17 execution is rough to install on Mac or stampede
 #if __cplusplus >= 201701L
         std::for_each(std::execution::par, std::begin(v), std::end(v), [&](int item) {
+            std::mutex mtx;
             std::lock_guard<std::mutex> guard(mtx);
             m+=item*item*item; // correct
         });
