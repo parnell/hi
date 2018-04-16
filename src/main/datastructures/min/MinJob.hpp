@@ -29,7 +29,7 @@ public:
     explicit MinItem(size_t size) : mysize(size){
     }
 
-    void work() override{
+    virtual void work() {
         Timer t("Doing work");
         v.resize(mysize);
         std::iota(v.begin(), v.end(), 0);

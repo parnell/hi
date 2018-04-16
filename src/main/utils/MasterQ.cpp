@@ -1,3 +1,2 @@
-// $(NAME)
 
 #include "MasterQ.hpp"

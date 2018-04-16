@@ -18,6 +18,14 @@ class Worker {
     volatile bool quit;
     std::list<WorkItem*> queue;
     std::list<mpi::request> sends;
+
+    void resolveSends(bool force=false){
+        if (!sends.empty()){
+            sends.remove_if([](mpi::request req){ return req.test(); });
+//            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            std::cout << "   ### Slave " << world.rank() << "  resolving. remaining=" << sends.size() << " " << std::endl;
+        }
+    }
 public:
     Worker() {
         quit = false;
@@ -36,14 +44,14 @@ public:
             std::cout << "    Slave " << world.rank() << "  isend (" << pwi->getId() << " ) " << std::endl;
             sends.push_back(world.isend(0, TagType::WORK_STATUS, pwi->getId()));
         }
-        sends.remove_if([](mpi::request req){ return req.test(); });
+        resolveSends();
     }
 
     void checkmessages() {
 //        std::cout << "    Slave " << world.rank() << "  checking work" << std::endl;
-        boost::optional<mpi::status> status;
+//        boost::optional<mpi::status> status;
 
-        while ((status = world.iprobe(0, TagType::WORK))) {
+        while (world.iprobe(0, TagType::WORK)) {
             WorkItem* pwi;
 //            std::cout << "    Slave " << world.rank() << "  waiting data () " << std::endl;
             world.recv(0, TagType::WORK, pwi);
@@ -52,13 +60,10 @@ public:
         }
     }
 
-    bool checkquit() {
-//        std::cout << "    Slave " << world.rank() << "  check quit" << std::endl;
-        boost::optional<mpi::status> status = world.iprobe(0, TagType::QUIT);
-        if (status) {
-            int v;
-            world.recv(0, TagType::QUIT, v);
+    inline bool checkquit() {
+        if (world.iprobe(0, TagType::QUIT)) {
             std::cout << "    Slave " << world.rank() << "  found QUIT  " << std::endl;
+            world.recv(0, TagType::QUIT);
             return true;
         }
         return false;
@@ -72,9 +77,12 @@ public:
             dowork(); /// check for work
 
             if (checkquit()){ /// check for quit
+                resolveSends();
                 break;}
-
-            std::this_thread::yield();
+            /// for some reason going through this loop too fast causes mpi boost to crash using iprobe
+            /// Yield is insufficient
+            std::this_thread::sleep_for(std::chrono::microseconds(10));
+//            std::this_thread::yield();
         }
     }
 

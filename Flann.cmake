@@ -20,24 +20,24 @@ elseif(UNIX)
     include_directories($ENV{HOME}/usr/local/flann-1.8.4/include/flann)
     set(PC_FLANN_INCLUDEDIR $ENV{HOME}/usr/local/flann-1.8.4/include)
     set(PC_FLANN_LIBDIR $ENV{HOME}/usr/local/flann-1.8.4/include)
+
+    set(FLANN_DEFINITIONS ${PC_FLANN_CFLAGS_OTHER})
+
+    find_path(FLANN_INCLUDE_DIR flann/flann.hpp
+            HINTS ${PC_FLANN_INCLUDEDIR} ${PC_FLANN_INCLUDE_DIRS})
+
+    find_library(FLANN_LIBRARY flann
+            HINTS ${PC_FLANN_LIBDIR} ${PC_FLANN_LIBRARY_DIRS})
+
+    set(FLANN_INCLUDE_DIRS ${FLANN_INCLUDE_DIR})
+    set(FLANN_LIBRARIES ${FLANN_LIBRARY})
+
+    include(FindPackageHandleStandardArgs)
+    find_package_handle_standard_args(Flann DEFAULT_MSG
+            FLANN_LIBRARY FLANN_INCLUDE_DIR)
+
+    mark_as_advanced(FLANN_LIBRARY FLANN_INCLUDE_DIR)
+    #find_package(Flann REQUIRED )
+
+    include_directories( ${FLANN_INCLUDE_DIRS} )
 endif()
-
-set(FLANN_DEFINITIONS ${PC_FLANN_CFLAGS_OTHER})
-
-find_path(FLANN_INCLUDE_DIR flann/flann.hpp
-        HINTS ${PC_FLANN_INCLUDEDIR} ${PC_FLANN_INCLUDE_DIRS})
-
-find_library(FLANN_LIBRARY flann
-        HINTS ${PC_FLANN_LIBDIR} ${PC_FLANN_LIBRARY_DIRS})
-
-set(FLANN_INCLUDE_DIRS ${FLANN_INCLUDE_DIR})
-set(FLANN_LIBRARIES ${FLANN_LIBRARY})
-
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(Flann DEFAULT_MSG
-        FLANN_LIBRARY FLANN_INCLUDE_DIR)
-
-mark_as_advanced(FLANN_LIBRARY FLANN_INCLUDE_DIR)
-#find_package(Flann REQUIRED )
-
-include_directories( ${FLANN_INCLUDE_DIRS} )

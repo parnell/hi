@@ -11,11 +11,14 @@
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/export.hpp>
 #include <numeric>
+#include <chrono> // sleeping
+#include <thread> // sleeping
+#include <map>
+#include <list>
+#include <unordered_map>
 
 #include <queue>
 #include "../../utils/vecutil.hpp"
-#include "../hi/HIBuildItem.hpp"
-//#include "../../utils/stringutils.hpp"
 
 #include "WorkItem.hpp"
 #include "../../dtypes.hpp"
@@ -24,11 +27,6 @@
 #include "JobHandler.hpp"
 #include "Worker.hpp"
 
-#include <chrono> // sleeping
-#include <thread> // sleeping
-#include <map>
-#include <list>
-#include <unordered_map>
 
 namespace mpi = boost::mpi;
 
@@ -40,7 +38,14 @@ class Master {
 
     JobHandler jh;
 //    std::mutex mtx;
+    std::list<mpi::request> sends;
+    std::list<mpi::request> recvs;
+    void resolveSends(){
+        sends.remove_if([](mpi::request req){ return req.test(); });
+        if (sends.size())
+            std::cout << "   @@@@ Master " << world.rank() << "  sends (" << sends.size() << " ) " << std::endl;
 
+    }
 public:
     Master(){
         this->pdata = NULL;
@@ -62,7 +67,7 @@ public:
 //        std::unique_lock<std::mutex> lck(mtx);
         std::thread workerThread = std::thread(runWorker);
         std::list<WorkItem*> allitems = jh.getAllItems();
-        std::list<mpi::request> sends;
+
         int sendto = 0;
         long completedWorkItem;
         while (true) {
@@ -78,8 +83,7 @@ public:
             std::this_thread::yield();
             std::for_each(allitems.begin(), allitems.end(), vecutil::DeleteVector<WorkItem*>());
             allitems.clear();
-            sends.remove_if([](mpi::request req){ return req.test(); });
-
+//            resolveSends();
             /// Check for done items
             for (auto& i : workerIds) {
                 while (boost::optional<mpi::status> status = world.iprobe(i, TagType::WORK_STATUS)) {
@@ -100,7 +104,9 @@ public:
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
             std::this_thread::yield();
+            resolveSends();
         }
+//        resolveSends();
 
         std::cout << "======================  sending quit " << std::endl;
         Timer t("quittime");
@@ -108,7 +114,7 @@ public:
         mpi::request reqs[nworkers];
         int n=0;
         for (auto& i : workerIds) {
-            reqs[n++] = world.isend(i, TagType::QUIT, 1);
+            reqs[n++] = world.isend(i, TagType::QUIT);
         }
         mpi::wait_all(reqs, reqs + nworkers);
         std::cout << "======================  gathering " << std::endl;

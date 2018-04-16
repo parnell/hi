@@ -12,9 +12,9 @@ class Job {
     friend class JobHandler;
 protected:
     std::list<WorkItem*> unfinished;
-    const long id;
 
 public:
+    const long id;
 
     virtual ~Job(){
         for (auto& pwi: unfinished){
@@ -22,6 +22,7 @@ public:
                 delete pwi;
             }
         }
+        unfinished.clear();
     }
 
     Job() : id(njobs++){}

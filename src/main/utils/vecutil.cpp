@@ -1,5 +1,6 @@
 #include "vecutil.hpp"
 
+#if COMPILE_TESTS
 namespace vecutil{
     TEST(utils, splitvec)
     {
@@ -27,7 +28,6 @@ namespace vecutil{
         }
 
     }
-
-
 }
+#endif
 

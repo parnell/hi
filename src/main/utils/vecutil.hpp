@@ -3,7 +3,6 @@
 #define HI_VECTUTIL_H
 #include <vector>
 #include <iostream>
-#include "gtest/gtest.h"
 
 
 namespace vecutil{

@@ -6,25 +6,31 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/mpi/collectives.hpp>  /// for gatherv
 #include <numeric>
+
 #include "datastructures/rm/WorkItem.hpp"
-#include "utils/vecutil.hpp"
 #include "datastructures/rm/Worker.hpp"
 #include "datastructures/data.hpp"
 #include "datastructures/Euc.hpp"
 #include "datastructures/rm/Master.hpp"
+
 #include "dtypes.hpp"
 #include "globals.hpp"
+
 #include "datastructures/hi/HIBuildItem.hpp"
 #include "datastructures/hi/HIJob.hpp"
 #include "datastructures/rm/ReturnItem.hpp"
+
 #include "datastructures/min/MinJob.hpp"
 #include "datastructures/Timer.hpp"
+#include "utils/vecutil.hpp"
 #include "utils/stringutils.hpp"
+#include "datastructures/hi/HI.hpp"
+
 
 namespace mpi = boost::mpi;
 
 BOOST_CLASS_EXPORT_GUID(WorkItem, "WorkItem");
-BOOST_CLASS_EXPORT_GUID(HIBuildItem, "HIBuildItem");
+BOOST_CLASS_EXPORT_GUID(hi::HIBuildItem, "HIBuildItem");
 BOOST_CLASS_EXPORT_GUID(MinItem, "MinItem");
 
 
@@ -93,11 +99,12 @@ int main(int argc, char** argv) {
     Timer t(sutil::sformat("%d", world.rank()));
 
     if (world.rank() == 0) {
-//        HIJob j;
-        MinJob j(100000000, 4);
+        hi::HIJob j;
+//        MinJob j(10000000, 4);
+
         if (build && query) {
-//            HIBuildItem* bi = new HIBuildItem(j.id);
-//            j.addWorkItem(*bi);
+            hi::HIBuildItem* bi = new hi::HIBuildItem(j.id);
+            j.addWorkItem(*bi);
         } else if (build){
 //            m.build();
         } else if (query){
