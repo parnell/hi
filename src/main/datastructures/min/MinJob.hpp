@@ -29,7 +29,7 @@ public:
     explicit MinItem(size_t size) : mysize(size){
     }
 
-    virtual void work() {
+    virtual std::list<WorkItem*> work() {
         Timer t("Doing work");
         v.resize(mysize);
         std::iota(v.begin(), v.end(), 0);
@@ -56,6 +56,7 @@ public:
         }
 #endif
         std::cout << "searched " << v.size() << "  " << mysize << "  " << m  << std::endl;
+        return NO_WORK;
     };
 };
 

@@ -27,13 +27,15 @@ class HIBuildItem : public WorkItem {
 
 //    flann::Matrix<Dat> *pdataset;
 //    flann::NNIndex<flann::L2<Dat>> *pindex;
+    lshbox::Matrix<Dat> data;
 
-        template<class Archive>
-        void serialize(Archive &ar, const unsigned int version) {
-            ar & boost::serialization::base_object<WorkItem>(*this);
-//        ar & *pdataset;
-            ar & items;
-        }
+    template<class Archive>
+    void serialize(Archive &ar, const unsigned int version) {
+        ar & boost::serialization::base_object<WorkItem>(*this);
+        ar & items;
+//        ar & data;
+    }
+
 public:
     HIBuildItem() : WorkItem() {}
 
@@ -43,7 +45,7 @@ public:
 
 //    HIBuildItem(int jobid, flann::Matrix<Dat> &dataset) : WorkItem(jobid), pdataset(&dataset) {}
 
-    virtual void work();
+    virtual std::list<WorkItem*> work();
 
     virtual std::string toString() const {
         std::stringstream str;

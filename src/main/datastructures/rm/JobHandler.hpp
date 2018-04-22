@@ -5,12 +5,26 @@
 
 #include <unordered_map>
 #include <map>
+#include <vector>
 #include "Job.hpp"
+#include "WorkItem.hpp"
 
 class JobHandler {
 public:
-    std::map<int,Job*> jobs;
-    std::unordered_map<int,bool> workItemCompleted;
+    JobHandler(unsigned int nworkers){
+        workItemCompleted.resize(nworkers);
+        for (int i = 0; i < nworkers; ++i){
+            workItemCompleted[i] = 0;
+        }
+    }
+    ~JobHandler(){
+        for ( auto const & kv : jobs ) {
+            delete kv.second;
+        }
+    }
+
+    std::map<size_t,Job*> jobs;
+    std::vector<size_t> workItemCompleted;
 
     std::list<WorkItem*> getAllItems(){
         std::list<WorkItem*> allitems;
@@ -20,22 +34,23 @@ public:
         return allitems;
     }
 
-    void workItemComplete(int workId) {
-        workItemCompleted[workId] = true;
+    void workItemComplete(ReturnResult result) {
+        workItemCompleted[result.workerid] = result.remaining;
     }
 
-    void addJob(Job &job) {
-        jobs[job.id] = &job;
-        for ( auto const & i : job.getWorkItems() ) {
-            workItemCompleted[i->getId()] = false;
-        }
+    void sendingWorkTo(int workerid) {
+        workItemCompleted[workerid] += 1;
+    }
+
+    void addJob(Job* pjob) {
+        jobs[pjob->id] = pjob;
     }
 
     virtual std::string toString() const{
         std::stringstream str;
         str << "[JH ";
-        for (auto& kv : workItemCompleted){
-            str << kv.first << ":" << kv.second;
+        for (unsigned int i=0;i< workItemCompleted.size(); ++i){
+            str << "("<<i << ":" << workItemCompleted[i]<<")";
         }
         str << "]";
         return str.str();
@@ -47,8 +62,8 @@ public:
     }
 
     bool isComplete() {
-        for (auto& kv : workItemCompleted){
-            if (!kv.second){
+        for (auto& i : workItemCompleted){
+            if (i > 0){
                 return false; }
         }
         return true;

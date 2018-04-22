@@ -2,33 +2,35 @@
 #ifndef HI_VECTUTIL_H
 #define HI_VECTUTIL_H
 #include <vector>
+#include <list>
 #include <iostream>
 
 
 namespace vecutil{
 
-    // Functor for deleting pointers in vector.
-    template<class T> class DeleteVector {
-    public:
-        // Overloaded () operator.
-        // This will be called by for_each() function.
-        bool operator()(T x) const {
-            // Delete pointer.
-            delete x;
-            return true;
-        }
-    };
-
-    template <typename T>
-    std::vector<T> split(std::vector<T>& v, const int nparts, const int iteration=0) {
-        int workper = v.size() / nparts;
-        int rem = v.size() % nparts;
-        auto it = v.begin();
-        int start = iteration < rem ? workper*iteration : (workper+1)*(rem) + workper*(iteration-rem);
-        int end = start + (iteration < rem ? workper +1 : workper);
-        std::cout << workper << " i=" <<iteration << "  " << start<< "   " << end << "  " << (end-start) << "      " << end - start << std::endl;
-        return std::vector<T>(it + start, it + end);
+// Functor for deleting pointers in vector.
+template<class T> class DeleteVector {
+public:
+    // Overloaded () operator.
+    // This will be called by for_each() function.
+    bool operator()(T x) const {
+        // Delete pointer.
+        delete x;
+        return true;
     }
+};
+
+template <typename T>
+std::vector<T> split(std::vector<T>& v, const int nparts, const int iteration=0) {
+    size_t workper = v.size() / nparts;
+    size_t rem = v.size() % nparts;
+    auto it = v.begin();
+    size_t start = iteration < rem ? workper*iteration : (workper+1)*(rem) + workper*(iteration-rem);
+    size_t end = start + (iteration < rem ? workper +1 : workper);
+//    std::cout << workper << " i=" <<iteration << "  " << start<< "   " << end << "  " << (end-start) << "      " << end - start << std::endl;
+    return std::vector<T>(it + start, it + end);
+}
+
 //
 //        template <typename T>
 //    std::vector< std::vector<T> > splitvector(std::vector<T>& v, int nparts){

@@ -18,7 +18,6 @@
 
 #include "datastructures/hi/HIBuildItem.hpp"
 #include "datastructures/hi/HIJob.hpp"
-#include "datastructures/rm/ReturnItem.hpp"
 
 #include "datastructures/min/MinJob.hpp"
 #include "datastructures/Timer.hpp"
@@ -32,6 +31,7 @@ namespace mpi = boost::mpi;
 BOOST_CLASS_EXPORT_GUID(WorkItem, "WorkItem");
 BOOST_CLASS_EXPORT_GUID(hi::HIBuildItem, "HIBuildItem");
 BOOST_CLASS_EXPORT_GUID(MinItem, "MinItem");
+BOOST_CLASS_EXPORT_GUID(ReturnResult, "ReturnResult");
 
 
 //typedef std::unique_ptr<Euc<int>> Dat;
@@ -99,12 +99,12 @@ int main(int argc, char** argv) {
     Timer t(sutil::sformat("%d", world.rank()));
 
     if (world.rank() == 0) {
-        hi::HIJob j;
+        auto pj = new hi::HIJob();
 //        MinJob j(10000000, 4);
 
         if (build && query) {
-            hi::HIBuildItem* bi = new hi::HIBuildItem(j.id);
-            j.addWorkItem(*bi);
+            auto bi = new hi::HIBuildItem(pj->id);
+            pj->addWorkItem(*bi);
         } else if (build){
 //            m.build();
         } else if (query){
@@ -112,11 +112,11 @@ int main(int argc, char** argv) {
         }
         /// create master
         Master<Dat> m;
-        m.addJob(j);
+        m.addJob(pj);
         m.runjobs();
     } else {
         /// Create worker
-        Worker m;
+        Worker m(world.rank());
         m.run();
     }
     return 0;

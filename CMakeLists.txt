@@ -59,7 +59,7 @@ set(SOURCE_FILES src/main/utils/MasterQ.cpp src/main/utils/MasterQ.hpp src/main/
         src/main/datastructures/rm/Job.cpp src/main/datastructures/rm/Job.hpp src/main/datastructures/hi/HIJob.cpp
         src/main/datastructures/hi/HIJob.cpp src/main/datastructures/hi/HIJob.hpp src/main/datastructures/rm/JobHandler.cpp
         src/main/datastructures/rm/JobHandler.hpp src/main/datastructures/min/MinJob.cpp src/main/datastructures/min/MinJob.hpp
-        src/main/datastructures/rm/ReturnItem.cpp src/main/datastructures/rm/ReturnItem.hpp src/main/datastructures/Timer.cpp
+        src/main/datastructures/Timer.cpp
         src/main/datastructures/Timer.hpp src/main/utils/stringutils.hpp src/main/myomp.hpp src/main/datastructures/hi/HIBuild.cpp src/main/datastructures/hi/HIBuild.hpp)
 
 

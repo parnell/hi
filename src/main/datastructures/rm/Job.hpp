@@ -38,7 +38,6 @@ public:
         return str.str();
     };
 
-
     friend std::ostream& operator<<(std::ostream& os, Job const& o) {
         return os << o.toString();
     }

@@ -41,13 +41,13 @@ class Master {
     std::list<mpi::request> sends;
     std::list<mpi::request> recvs;
     void resolveSends(){
-        sends.remove_if([](mpi::request req){ return req.test(); });
-        if (sends.size())
-            std::cout << "   @@@@ Master " << world.rank() << "  sends (" << sends.size() << " ) " << std::endl;
-
+        if (!sends.empty()) {
+            sends.remove_if([](mpi::request req) { return req.test(); });
+//            std::cout << "   @@@@ Master " << world.rank() << "  resolving sends (" << sends.size() << " ) " << std::endl;
+        }
     }
 public:
-    Master(){
+    Master() : jh(world.size()){
         this->pdata = NULL;
     }
 
@@ -55,21 +55,20 @@ public:
 
     }
     static void runWorker(){
-        Worker worker;
+        Worker worker(0);
         worker.run();
     }
 
     void runjobs(){
-        std::vector<size_t> workerIds(world.size());
+        std::vector<int> workerIds(world.size());
         std::iota(workerIds.begin(), workerIds.end(), 0);
-        const size_t nworkers = workerIds.size();
+        const int nworkers = static_cast<int>(workerIds.size());
 
 //        std::unique_lock<std::mutex> lck(mtx);
         std::thread workerThread = std::thread(runWorker);
         std::list<WorkItem*> allitems = jh.getAllItems();
 
         int sendto = 0;
-        long completedWorkItem;
         while (true) {
 //            std::cout << "Master LOOPING " << jh <<  std::endl;
             if (!allitems.empty()){
@@ -78,23 +77,26 @@ public:
                     ++sendto;
                     std::cout << " >>> " << workerIds[sendto % nworkers] << " " << **iter << " " << allitems.size() << std::endl;
                     sends.push_back(world.isend(workerIds[sendto % nworkers], TagType::WORK, *iter));
+                    jh.sendingWorkTo(sendto);
                 }
             }
+
             std::this_thread::yield();
             std::for_each(allitems.begin(), allitems.end(), vecutil::DeleteVector<WorkItem*>());
             allitems.clear();
-//            resolveSends();
             /// Check for done items
             for (auto& i : workerIds) {
-                while (boost::optional<mpi::status> status = world.iprobe(i, TagType::WORK_STATUS)) {
-                    std::cout << "               <<< Slave " << i << "  ircv complete=" << std::endl;
+                while (world.iprobe(i, TagType::WORK_STATUS)) {
+//                    std::cout << "               <<< Slave " << i << "  ircv complete=" << std::endl;
 
-                    mpi::request req = world.irecv(i, TagType::WORK_STATUS, completedWorkItem);
-                    std::cout << "                 <<< Slave " << i << "  done with workitem " << completedWorkItem <<
+                    ReturnResult result;
+                    int r;
+                    mpi::request req = world.irecv(i, TagType::WORK_STATUS, r);
+                    jh.workItemComplete(ReturnResult(i,r));
+                    std::cout << jh << "                 <<< Slave " <<i << "  remaining=" << r <<
                               "  complete=" << jh.isComplete() << std::endl;
-                    std::cout << "               !!!!!!!!!!!!!<<< Slave " << i << "  done with workitem " << completedWorkItem <<
-                              "  complete=" << jh.isComplete() << std::endl;
-                    jh.workItemComplete(completedWorkItem);
+//                    std::cout << "               !!!!!!!!!!!!!<<< Slave " << i << "  done with workitem " << completedWorkItem <<
+//                              "  complete=" << jh.isComplete() << std::endl;
                 }
             }
 
@@ -106,7 +108,6 @@ public:
             std::this_thread::yield();
             resolveSends();
         }
-//        resolveSends();
 
         std::cout << "======================  sending quit " << std::endl;
         Timer t("quittime");
@@ -124,8 +125,8 @@ public:
 
 
 
-    void addJob(Job& job) {
-        jh.addJob(job);
+    void addJob(Job* pjob) {
+        jh.addJob(pjob);
     }
 };
 
