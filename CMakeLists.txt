@@ -45,7 +45,6 @@ set(T2PROGRAMS src/test/hi2.cpp)
 
 set(T3PROGRAMS src/test/hi3.cpp)
 
-
 set(SOURCE_FILES src/main/utils/MasterQ.cpp src/main/utils/MasterQ.hpp src/main/datastructures/rm/WorkItem.cpp
         src/main/datastructures/rm/WorkItem.hpp src/main/utils/vecutil.cpp src/main/debug.hpp src/main/datastructures/data.hpp
         src/main/globals.hpp src/main/datastructures/dna.cpp src/main/datastructures/dna.hpp
@@ -84,7 +83,11 @@ endforeach(program)
 foreach(program ${T2PROGRAMS})
     get_filename_component(progname ${program} NAME_WE)
     add_executable(${progname} ${SOURCE_FILES} ${program})
-#    target_link_libraries(${progname} PUBLIC gtest gtest_main)
+    if(APPLE)
+        target_link_libraries(${progname} PUBLIC ${_hdf5_libs})
+    elseif(UNIX)
+        target_link_libraries(${progname} PUBLIC ${FLANN_LIBRARIES})
+    endif()
     target_link_libraries(${progname} PUBLIC ${MPI_LIBRARIES})
     target_link_libraries(${progname} PUBLIC ${Boost_LIBRARIES} )
     if(${OpenMP_FOUND})

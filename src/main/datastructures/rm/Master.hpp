@@ -9,6 +9,7 @@
 #include <boost/mpi/environment.hpp>
 #include <boost/mpi/communicator.hpp>
 #include <boost/serialization/serialization.hpp>
+#include <boost/serialization/vector.hpp>
 #include <boost/serialization/export.hpp>
 #include <numeric>
 #include <chrono> // sleeping
@@ -73,12 +74,22 @@ public:
 //            std::cout << "Master LOOPING " << jh <<  std::endl;
             if (!allitems.empty()){
                 Timer t("msend");
-                for (auto iter = allitems.begin(); iter != allitems.end(); ++iter){
-                    ++sendto;
-                    std::cout << " >>> " << workerIds[sendto % nworkers] << " " << **iter << " " << allitems.size() << std::endl;
-                    sends.push_back(world.isend(workerIds[sendto % nworkers], TagType::WORK, *iter));
-                    jh.sendingWorkTo(sendto);
+                std::vector<WorkItem*> v{ std::begin(allitems), std::end(allitems) };
+                for (int i=0; i< nworkers;++i){
+                      ++sendto;
+                    std::vector<WorkItem *> send = vecutil::split(v, nworkers, i);
+                    std::cout << " >>> " << workerIds[sendto % nworkers] << " " << send.size() << " " << allitems.size() << std::endl;
+                    sends.push_back(world.isend(workerIds[sendto % nworkers], TagType::WORK, send));
+//                    jh.sendingWorkTo(sendto);
                 }
+
+
+//                for (auto iter = allitems.begin(); iter != allitems.end(); ++iter){
+//                    ++sendto;
+//                    std::cout << " >>> " << workerIds[sendto % nworkers] << " " << **iter << " " << allitems.size() << std::endl;
+//                    sends.push_back(world.isend(workerIds[sendto % nworkers], TagType::WORK, *iter));
+//                    jh.sendingWorkTo(sendto);
+//                }
             }
 
             std::this_thread::yield();
@@ -89,7 +100,7 @@ public:
                 while (world.iprobe(i, TagType::WORK_STATUS)) {
 //                    std::cout << "               <<< Slave " << i << "  ircv complete=" << std::endl;
 
-                    ReturnResult result;
+//                    ReturnResult result;
                     int r;
                     mpi::request req = world.irecv(i, TagType::WORK_STATUS, r);
                     jh.workItemComplete(ReturnResult(i,r));

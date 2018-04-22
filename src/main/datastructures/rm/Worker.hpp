@@ -56,10 +56,16 @@ public:
 
     void checkMessages() {
         while (world.iprobe(0, TagType::WORK)) {
-            WorkItem* pwi;
+//            WorkItem* pwi;
+//            world.recv(0, TagType::WORK, pwi);
+//            std::cout << "    Slave " << world.rank() << "  found (" << *pwi << " ) " << std::endl;
+//            queue.push_back(pwi);
+            std::vector<WorkItem*> pwi;
             world.recv(0, TagType::WORK, pwi);
-            std::cout << "    Slave " << world.rank() << "  found (" << *pwi << " ) " << std::endl;
-            queue.push_back(pwi);
+            std::cout << "    Slave " << world.rank() << "  found (" << pwi.size() << " ) " << std::endl;
+            for (auto& i : pwi){
+                queue.push_back(i);
+            }
         }
     }
 

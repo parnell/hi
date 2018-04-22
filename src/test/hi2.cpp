@@ -14,7 +14,6 @@
 namespace mpi = boost::mpi;
 
 BOOST_CLASS_EXPORT_GUID(WorkItem, "WorkItem");
-BOOST_CLASS_EXPORT_GUID(HIBuildItem, "HIBuildItem");
 BOOST_CLASS_EXPORT_GUID(MinItem, "MinItem");
 
 
@@ -39,14 +38,14 @@ int main(int argc, char** argv) {
     Timer t(sutil::sformat("%d", world.rank()));
 
     if (world.rank() == 0) {
-        MinJob j(10000000, 4);
+        MinJob* pj = new MinJob(10000000, 4);
         /// create master
         Master<Dat> m;
-        m.addJob(j);
+        m.addJob(pj);
         m.runjobs();
     } else {
         /// Create worker
-        Worker m;
+        Worker m(world.rank());
         m.run();
     }
     return 0;
