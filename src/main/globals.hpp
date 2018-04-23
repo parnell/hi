@@ -7,7 +7,8 @@
 //typedef Euc<float> Dat;
 //typedef Euc<float> Dat;
 typedef float Dat;
-
+#define TIME_MS 1000000
+const long long REBALANCE_TIME_NS = TIME_MS * 500;
 
 //extern std::vector<Data*> vGlobData;
 

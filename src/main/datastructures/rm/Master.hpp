@@ -68,33 +68,30 @@ public:
 //        std::unique_lock<std::mutex> lck(mtx);
         std::thread workerThread = std::thread(runWorker);
         std::list<WorkItem*> allitems = jh.getAllItems();
-
-        int sendto = 0;
+        Timer marker("marker");
+        int sendto;
         while (true) {
 //            std::cout << "Master LOOPING " << jh <<  std::endl;
+            /// Send all of our items
             if (!allitems.empty()){
                 Timer t("msend");
                 std::vector<WorkItem*> v{ std::begin(allitems), std::end(allitems) };
-                for (int i=0; i< nworkers;++i){
-                      ++sendto;
+                for (int i=0, sendto=1; i< nworkers;++i, ++sendto){
                     std::vector<WorkItem *> send = vecutil::split(v, nworkers, i);
                     std::cout << " >>> " << workerIds[sendto % nworkers] << " " << send.size() << " " << allitems.size() << std::endl;
                     sends.push_back(world.isend(workerIds[sendto % nworkers], TagType::WORK, send));
-//                    jh.sendingWorkTo(sendto);
+                    jh.sendingWorkTo(sendto, send.size());
                 }
-
-
-//                for (auto iter = allitems.begin(); iter != allitems.end(); ++iter){
-//                    ++sendto;
-//                    std::cout << " >>> " << workerIds[sendto % nworkers] << " " << **iter << " " << allitems.size() << std::endl;
-//                    sends.push_back(world.isend(workerIds[sendto % nworkers], TagType::WORK, *iter));
-//                    jh.sendingWorkTo(sendto);
-//                }
             }
 
             std::this_thread::yield();
             std::for_each(allitems.begin(), allitems.end(), vecutil::DeleteVector<WorkItem*>());
             allitems.clear();
+
+            /// Check for Rebalancing workloads
+            if (marker.ellapsed_and_mark(std::chrono::nanoseconds(REBALANCE_TIME_NS)) && jh.shouldRebalance()){
+            }
+
             /// Check for done items
             for (auto& i : workerIds) {
                 while (world.iprobe(i, TagType::WORK_STATUS)) {

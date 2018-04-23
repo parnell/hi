@@ -10,6 +10,7 @@ if (COMPILE_TESTS)
     set(TEST_PROGRAMS src/test/testall.cpp)
 
     include(GTest.cmake) ###### Google-Test
+    add_definitions(-DCOMPILE_TESTS=1)
 endif(COMPILE_TESTS)
 
 include(MPI.cmake) ###### MPI
@@ -59,10 +60,10 @@ set(SOURCE_FILES src/main/utils/MasterQ.cpp src/main/utils/MasterQ.hpp src/main/
         src/main/datastructures/hi/HIJob.cpp src/main/datastructures/hi/HIJob.hpp src/main/datastructures/rm/JobHandler.cpp
         src/main/datastructures/rm/JobHandler.hpp src/main/datastructures/min/MinJob.cpp src/main/datastructures/min/MinJob.hpp
         src/main/datastructures/Timer.cpp
-        src/main/datastructures/Timer.hpp src/main/utils/stringutils.hpp src/main/myomp.hpp src/main/datastructures/hi/HIBuild.cpp src/main/datastructures/hi/HIBuild.hpp)
+        src/main/datastructures/Timer.hpp src/main/utils/stringutils.hpp src/main/myomp.hpp src/main/datastructures/hi/HIBuild.cpp src/main/datastructures/hi/HIBuild.hpp src/main/datastructures/rm/LoadBalancer.cpp src/main/datastructures/rm/LoadBalancer.hpp)
 
 
-foreach(program ${PROGRAMS})
+foreach(program ${PROGRAMS} ${TEST_PROGRAMS})
     get_filename_component(progname ${program} NAME_WE)
     add_executable(${progname} ${SOURCE_FILES} ${program})
     if(APPLE)
@@ -70,7 +71,7 @@ foreach(program ${PROGRAMS})
     elseif(UNIX)
         target_link_libraries(${progname} PUBLIC ${FLANN_LIBRARIES})
     endif()
-#    target_link_libraries(${progname} PUBLIC gtest gtest_main)
+
     target_link_libraries(${progname} PUBLIC ${MPI_LIBRARIES})
     target_link_libraries(${progname} PUBLIC ${Boost_LIBRARIES} )
 
@@ -78,6 +79,11 @@ foreach(program ${PROGRAMS})
         target_link_libraries(${progname} PUBLIC ${OpenMP_CXX_LIBRARIES} ${PROJECT_LINK_LIBS})
         target_link_libraries(${progname} PUBLIC OpenMP::OpenMP_CXX)
     endif()
+    if (COMPILE_TESTS)
+        target_link_libraries(${progname} PUBLIC gtest gtest_main)
+    endif(COMPILE_TESTS)
+
+
 endforeach(program)
 
 foreach(program ${T2PROGRAMS})
@@ -106,4 +112,4 @@ foreach(program ${T3PROGRAMS})
     target_link_libraries(${progname} PUBLIC ${Boost_LIBRARIES} )
 endforeach(program)
 
-add_test(NAME Dummy COMMAND hi)
+

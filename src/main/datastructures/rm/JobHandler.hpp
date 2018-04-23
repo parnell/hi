@@ -8,15 +8,19 @@
 #include <vector>
 #include "Job.hpp"
 #include "WorkItem.hpp"
+#include "LoadBalancer.hpp"
 
 class JobHandler {
+    LoadBalancer loadBalancer;
+
 public:
-    JobHandler(unsigned int nworkers){
+    explicit JobHandler(unsigned int nworkers){
         workItemCompleted.resize(nworkers);
         for (int i = 0; i < nworkers; ++i){
             workItemCompleted[i] = 0;
         }
     }
+
     ~JobHandler(){
         for ( auto const & kv : jobs ) {
             delete kv.second;
@@ -38,8 +42,8 @@ public:
         workItemCompleted[result.workerid] = result.remaining;
     }
 
-    void sendingWorkTo(int workerid) {
-        workItemCompleted[workerid] += 1;
+    void sendingWorkTo(int workerid, size_t amountOfWork=1) {
+        workItemCompleted[workerid] += amountOfWork;
     }
 
     void addJob(Job* pjob) {
@@ -67,6 +71,10 @@ public:
                 return false; }
         }
         return true;
+    }
+
+    bool shouldRebalance() {
+        return loadBalancer.shouldRebalance(workItemCompleted);
     }
 };
 

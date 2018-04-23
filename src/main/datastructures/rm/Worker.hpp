@@ -4,11 +4,13 @@
 
 #include <vector>
 #include <boost/mpi.hpp>
+#include <boost/serialization/serialization.hpp>
 #include <chrono>
 #include <thread>
 #include <list>
 #include "../../globals.hpp"
 #include "../rm/WorkItem.hpp"
+
 
 namespace mpi = boost::mpi;
 
@@ -56,10 +58,6 @@ public:
 
     void checkMessages() {
         while (world.iprobe(0, TagType::WORK)) {
-//            WorkItem* pwi;
-//            world.recv(0, TagType::WORK, pwi);
-//            std::cout << "    Slave " << world.rank() << "  found (" << *pwi << " ) " << std::endl;
-//            queue.push_back(pwi);
             std::vector<WorkItem*> pwi;
             world.recv(0, TagType::WORK, pwi);
             std::cout << "    Slave " << world.rank() << "  found (" << pwi.size() << " ) " << std::endl;
