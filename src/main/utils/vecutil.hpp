@@ -4,16 +4,22 @@
 #include <vector>
 #include <list>
 #include <iostream>
-
+#include <random>
+#include <unordered_set>
+#include <algorithm>    // std::min
 
 namespace vecutil{
+
+std::unordered_set<size_t> pickSet(size_t N, int k, std::mt19937& gen);
+
+std::vector<size_t> pick(size_t N, int k) ;
 
 // Functor for deleting pointers in vector.
 template<class T> class DeleteVector {
 public:
     // Overloaded () operator.
     // This will be called by for_each() function.
-    bool operator()(T x) const {
+    inline bool operator()(T x) const {
         // Delete pointer.
         delete x;
         return true;
@@ -31,30 +37,21 @@ std::vector<T> split(std::vector<T>& v, const int nparts, const int iteration=0)
     return std::vector<T>(it + start, it + end);
 }
 
-//
-//        template <typename T>
-//    std::vector< std::vector<T> > splitvector(std::vector<T>& v, int nparts){
-//        int workper = v.size() / nparts;
-//        int rem = v.size() % nparts;
-//        std::vector< std::vector<T> > splits(nparts);
-//        int cur = 0;
-//        auto it = v.begin();
-////        for (int i = 0; i < splits.size();++i){
-////            int next = cur +  i>=rem ? workper : workper+1;
-////            std::cout << "i=" << i << "   " << cur << " " << next << "  " << std::endl;
-////            splits.insert(splits.begin()+i, std::vector<T>(it+cur, it+next));
-////            cur += next;
-////        }
-////        std::vector< std::vector<T> > splits(nparts, std::vector<T>(workper+1));
-////        for (int i = 0; i < splits.size();++i){
-////            if (i >= rem){
-////                splits[i].resize(splits[i].size() -1);
-////            }
-////        }
-////        return splits;
-//
-//
-//    }
+template <typename T>
+std::vector<T*> pickPointers(const size_t N, const size_t C, const int k, T* pelems) {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::vector<T*> result(k);
+    auto us = pickSet(N,k, gen);
+    int i=0;
+    for (auto iter = us.begin();iter != us.end(); ++iter, ++i){
+//        std::cout << " (" << *iter << " :" << &pelems[*iter*C] << " " << pelems[*iter*C] << " ) ";
+        result[i] = &pelems[*iter*C];
+    }
+//    std::cout << std::endl;
+    return result;
+}
+
 
 }
 

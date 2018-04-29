@@ -4,10 +4,15 @@
 
 #include "Forest.hpp"
 #include "../../globals.hpp"
+#include "HITree.hpp"
+#include "../DataManager.hpp"
 
 namespace hi {
 class HI  {
+    std::vector<HITree*> trees_;
+
 public:
+    void build(DataManager *pdata, int max_depth=0);
 //    ~/src/LSHBOX/include/lshbox.h
     HI(){
 //        lshbox::itqLsh<Dat> itq;
@@ -29,6 +34,7 @@ public:
 //        itq.load(filename);
 //        itq.query(data[bench.getQuery(index)], scanner);
     }
+
 
 };
 

@@ -4,7 +4,7 @@ project(hi)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(COMPILE_TESTS 0)
+set(COMPILE_TESTS 1)
 
 if (COMPILE_TESTS)
     set(TEST_PROGRAMS src/test/testall.cpp)
@@ -60,7 +60,11 @@ set(SOURCE_FILES src/main/utils/MasterQ.cpp src/main/utils/MasterQ.hpp src/main/
         src/main/datastructures/hi/HIJob.cpp src/main/datastructures/hi/HIJob.hpp src/main/datastructures/rm/JobHandler.cpp
         src/main/datastructures/rm/JobHandler.hpp src/main/datastructures/min/MinJob.cpp src/main/datastructures/min/MinJob.hpp
         src/main/datastructures/Timer.cpp
-        src/main/datastructures/Timer.hpp src/main/utils/stringutils.hpp src/main/myomp.hpp src/main/datastructures/hi/HIBuild.cpp src/main/datastructures/hi/HIBuild.hpp src/main/datastructures/rm/LoadBalancer.cpp src/main/datastructures/rm/LoadBalancer.hpp)
+        src/main/datastructures/Timer.hpp src/main/utils/stringutils.hpp src/main/myomp.hpp
+        src/main/datastructures/hi/HIBuild.cpp src/main/datastructures/hi/HIBuild.hpp src/main/datastructures/rm/LoadBalancer.cpp
+        src/main/datastructures/rm/LoadBalancer.hpp src/main/datastructures/DataManager.cpp src/main/datastructures/DataManager.hpp
+        src/main/datastructures/hi/HITree.cpp src/main/datastructures/hi/HITree.hpp src/main/utils/statutil.cpp src/main/utils/statutil.hpp
+        src/main/datastructures/rm/M.cpp src/main/datastructures/rm/M.hpp src/main/datastructures/Stat.cpp src/main/datastructures/Stat.hpp)
 
 
 foreach(program ${PROGRAMS} ${TEST_PROGRAMS})
@@ -83,7 +87,6 @@ foreach(program ${PROGRAMS} ${TEST_PROGRAMS})
         target_link_libraries(${progname} PUBLIC gtest gtest_main)
     endif(COMPILE_TESTS)
 
-
 endforeach(program)
 
 foreach(program ${T2PROGRAMS})
@@ -100,6 +103,10 @@ foreach(program ${T2PROGRAMS})
         target_link_libraries(${progname} PUBLIC ${OpenMP_CXX_LIBRARIES} ${PROJECT_LINK_LIBS})
         target_link_libraries(${progname} PUBLIC OpenMP::OpenMP_CXX)
     endif()
+        if (COMPILE_TESTS)
+        target_link_libraries(${progname} PUBLIC gtest gtest_main)
+    endif(COMPILE_TESTS)
+
 endforeach(program)
 
 foreach(program ${T3PROGRAMS})
@@ -110,6 +117,10 @@ foreach(program ${T3PROGRAMS})
     target_link_libraries(${progname} PUBLIC gtest gtest_main)
     target_link_libraries(${progname} PUBLIC ${MPI_LIBRARIES})
     target_link_libraries(${progname} PUBLIC ${Boost_LIBRARIES} )
+    if (COMPILE_TESTS)
+        target_link_libraries(${progname} PUBLIC gtest gtest_main)
+    endif(COMPILE_TESTS)
+
 endforeach(program)
 
 

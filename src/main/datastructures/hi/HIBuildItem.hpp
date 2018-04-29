@@ -6,6 +6,7 @@
 #include "../../globals.hpp"
 #include "../rm/WorkItem.hpp"
 #include "HIBuild.hpp"
+#include "../DataManager.hpp"
 //#include "HI.hpp"
 #include <string>
 #include <flann/flann.hpp>
@@ -24,7 +25,7 @@ class HIBuildItem : public WorkItem {
     std::vector<Dat> items;
 
     friend class boost::serialization::access;
-
+    DataManager dataManager;
 //    flann::Matrix<Dat> *pdataset;
 //    flann::NNIndex<flann::L2<Dat>> *pindex;
     lshbox::Matrix<Dat> data;

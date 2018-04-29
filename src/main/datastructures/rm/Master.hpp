@@ -90,14 +90,13 @@ public:
 
             /// Check for Rebalancing workloads
             if (marker.ellapsed_and_mark(std::chrono::nanoseconds(REBALANCE_TIME_NS)) && jh.shouldRebalance()){
+                std::cout << " >>> ---------- REBALANCING ---------- " << std::endl;
             }
 
             /// Check for done items
             for (auto& i : workerIds) {
                 while (world.iprobe(i, TagType::WORK_STATUS)) {
 //                    std::cout << "               <<< Slave " << i << "  ircv complete=" << std::endl;
-
-//                    ReturnResult result;
                     int r;
                     mpi::request req = world.irecv(i, TagType::WORK_STATUS, r);
                     jh.workItemComplete(ReturnResult(i,r));
