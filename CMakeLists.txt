@@ -39,9 +39,9 @@ if(APPLE)
     link_directories($ENV{HOME}/src/LSHBOX/include)
 
 elseif(UNIX)
-    include(HDF5.cmake) ###### HDF5
-
     include(Flann.cmake) ###### Flann
+
+    include(HDF5.cmake) ###### HDF5
 endif()
 
 include(LSHBox.cmake) ###### LSHBox
