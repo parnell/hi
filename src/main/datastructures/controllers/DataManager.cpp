@@ -30,21 +30,16 @@ DataManager *DataManager::sliceData(size_t _begin, size_t _end) {
 }
 
 Dat* DataManager::loadData(std::string filename){
-//        std::string filename = "/Users/i855892/data/rdata/vec/gaussian/gaussian__d=14_s=10000_nclus=1_var=0.1.hdf5";
     std::string indexName = "data";
     flann::Matrix<Dat> dataset;
-//        pindex->buildIndex();
-    load_from_file(dataset, filename, indexName);
+    load_from_file<Dat>(dataset, filename, indexName);
 
 //        lshbox::Matrix<Dat> data(filename);
     Dat* pdat = dataset.ptr();
     size_t rows = dataset.rows;
     size_t cols = dataset.cols;
     m.transfer(pdat, rows, cols);
-
-//    lshbox::Matrix<Dat> data;
-//    data.load(dataset.ptr(), dataset.rows, dataset.cols);
-    std::cout << "Loading Data !!!" << rows << " : " << cols << std::endl;
+//    std::cout << "Loading Data !!!" << rows << " : " << cols << std::endl;
     return pdat;
 }
 
@@ -109,6 +104,16 @@ void DataManager::print_rowp() const {
 #include "gtest/gtest.h"
 #include "../../dprint.hpp"
 #include "../../utils/testutil.hpp"
+#include "../../utils/stringutils.hpp"
+
+TEST(controllers, DM_test_load)
+{
+    std::string filename = sutil::sformat("%s/../data/tests/gaussian__d=14_s=10000_nclus=1_var=0.1.hdf5",
+                                          CMAKE_CURRENT_BINARY_DIR);
+    DataManager mdat;
+    mdat.loadData(filename);
+    EXPECT_EQ(mdat.getRows(), 10000);
+}
 
 TEST(controllers, DM_construction_Memory)
 {

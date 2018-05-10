@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(COMPILE_TESTS 1)
 add_definitions(-DDEBUG_PRINT=1)
 add_definitions(-DDEBUG_LSH=0)
-
+add_definitions("-DCMAKE_CURRENT_BINARY_DIR=\"${CMAKE_CURRENT_BINARY_DIR}\"")
 if (COMPILE_TESTS)
     set(TEST_PROGRAMS src/test/testall.cpp)
 
