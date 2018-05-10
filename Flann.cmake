@@ -17,9 +17,9 @@ if(APPLE)
     link_directories(/usr/local/include/flann)
 else()
     #    link_directories($ENV{HOME}/usr/local/flann-1.8.4/include/flann)
-    include_directories($ENV{HOME}/usr/local/flann-1.8.4/include/flann)
-    set(PC_FLANN_INCLUDEDIR $ENV{HOME}/usr/local/flann-1.8.4/include)
-    set(PC_FLANN_LIBDIR $ENV{HOME}/usr/local/flann-1.8.4/lib)
+    include_directories($ENV{HOME}/src/flann_1.8.4_3/include/flann)
+    set(PC_FLANN_INCLUDEDIR $ENV{HOME}/src/flann_1.8.4_3/include)
+    set(PC_FLANN_LIBDIR $ENV{HOME}/src/flann_1.8.4_3/lib)
 
     set(FLANN_DEFINITIONS ${PC_FLANN_CFLAGS_OTHER})
 

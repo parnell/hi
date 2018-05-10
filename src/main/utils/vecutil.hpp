@@ -10,9 +10,9 @@
 
 namespace vecutil{
 
-std::unordered_set<size_t> pickSet(size_t N, int k, std::mt19937& gen);
+inline std::unordered_set<size_t> pickSet(size_t N, int k, std::mt19937& gen);
 
-std::vector<size_t> pick(size_t N, int k) ;
+inline std::vector<size_t> pick(size_t N, int k) ;
 
 // Functor for deleting pointers in vector.
 template<class T> class DeleteVector {
@@ -27,7 +27,7 @@ public:
 };
 
 template <typename T>
-std::vector<T> split(std::vector<T>& v, const int nparts, const int iteration=0) {
+inline std::vector<T> split(std::vector<T>& v, const int nparts, const int iteration=0) {
     size_t workper = v.size() / nparts;
     size_t rem = v.size() % nparts;
     auto it = v.begin();
@@ -38,7 +38,7 @@ std::vector<T> split(std::vector<T>& v, const int nparts, const int iteration=0)
 }
 
 template <typename T>
-std::vector<T*> randRowPointers(const size_t N, const size_t C, const int k, T *pelems) {
+inline std::vector<T*> randRowPointers(const size_t N, const size_t C, const int k, T *pelems) {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::vector<T*> result(k);
