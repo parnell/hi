@@ -87,8 +87,8 @@ struct HIBuildResults{
 
 
 struct HIQueryResults{
-    friend std::ostream& operator<<(std::ostream& os, const HIBuildResults& hi){
-        os << "[HIBuildResults\tnpoints="<<(size_t) hi.npoints <<"\tnnodes=" <<(size_t)  hi.nnodes << "\tninternal=" << (size_t) hi.ninternal <<
+    friend std::ostream& operator<<(std::ostream& os, const HIQueryResults& hi){
+        os << "[HIQueryResults\tnpoints="<<(size_t) hi.npoints <<"\tnnodes=" <<(size_t)  hi.nnodes << "\tninternal=" << (size_t) hi.ninternal <<
            "\tnleaf=" << (size_t) hi.nleaf <<"\tnspatial="<<(size_t) hi.nspatial<<"\tnlsh=" << (size_t) hi.nlsh <<
            "\tnpointsInLeaf=" << (size_t) hi.npointsInLeaf << "\tnpointsInInternal="<<(size_t) hi.npointsInInternal <<
            "\tnpointsInLSH="<<(size_t) hi.npointsInLSH <<"\t]";
@@ -154,12 +154,6 @@ struct HIQueryParams{
 };
 
 };
-
-//std::ostream& operator<< (std::ostream& os, const hi::HIBuildResults& hi) {
-//    os << "[HIBuildResults nnodes=\t" << hi.nnodes << "\tninternal=" << hi.ninternal <<
-//       "\tnleaf=" << hi.nleaf <<"\tnspatial="<<hi.nspatial<<"\tnlsh=" << hi.nlsh << "]";
-//    return os;
-//}
 
 
 

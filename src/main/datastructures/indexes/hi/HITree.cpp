@@ -1,6 +1,8 @@
 
 #include "HITree.hpp"
 
+std::mutex mylock;
+
 namespace hi {
 
 HITree::HITree() :
