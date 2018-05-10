@@ -8,6 +8,7 @@
 #include <iostream>
 #include <sstream>
 #include <list>
+#include <boost/mpi/communicator.hpp>
 
 class WorkItem;
 static const std::list<WorkItem*> NO_WORK(0);
@@ -32,6 +33,8 @@ public:
 
 class WorkItem {
     friend class boost::serialization::access;
+    boost::mpi::communicator world;
+
     static unsigned long nitems;
 
     template<class Archive>
@@ -40,17 +43,19 @@ class WorkItem {
         ar & id;
         ar & parentid;
         ar & jobid;
+        ar & nranks;
     }
 
 protected:
     long id;
     int jobid;
     int parentid;
+    int nranks;
 
 public:
-    WorkItem(): id(nitems++), jobid(-1), parentid(0){}
-    WorkItem(int jobid) : id(nitems++), jobid(jobid), parentid(0) {}
-    WorkItem(int jobid, int parentid) : id(nitems++), jobid(jobid), parentid(parentid) {}
+    WorkItem(): id(nitems++), jobid(-1), parentid(0), nranks(world.size()){}
+    WorkItem(int jobid) : id(nitems++), jobid(jobid), parentid(0),nranks(world.size()) {}
+    WorkItem(int jobid, int parentid, int nranks) : id(nitems++), jobid(jobid), parentid(parentid), nranks(world.size()) {}
 
     long getId() const;
 

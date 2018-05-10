@@ -5,11 +5,11 @@
 #include <set>
 #include <list>
 #include <boost/serialization/export.hpp>
-#include "../main/datastructures/Timer.hpp"
+#include "../main/utils/Timer.hpp"
 #include "../main/utils/stringutils.hpp"
 #include "../main/datastructures/min/MinJob.hpp"
-#include "../main/datastructures/rm/Worker.hpp"
-#include "../main/datastructures/rm/Master.hpp"
+#include "../main/datastructures/rm/Secondary.hpp"
+#include "../main/datastructures/rm/Primary.hpp"
 
 namespace mpi = boost::mpi;
 
@@ -40,12 +40,12 @@ int main(int argc, char** argv) {
     if (world.rank() == 0) {
         MinJob* pj = new MinJob(10000000, 4);
         /// create master
-        Master<Dat> m;
+        Primary m;
         m.addJob(pj);
-        m.runjobs();
+        m.runJobs();
     } else {
         /// Create worker
-        Worker m(world.rank());
+        Secondary m(world.rank());
         m.run();
     }
     return 0;

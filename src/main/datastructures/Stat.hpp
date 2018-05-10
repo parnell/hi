@@ -4,12 +4,31 @@
 
 #include <vector>
 
+struct SingleStat {
+    friend std::ostream& operator<<(std::ostream&, const SingleStat&);
+    size_t count;
+    double sum;
+    float mean;
+    float var;
+
+    void add(const float d);
+};
+
 struct Stat {
-    std::vector<size_t> sum;
+    friend std::ostream& operator<<(std::ostream&, const Stat&);
+    Stat(){}
+    Stat(const size_t size, const size_t D) : count(size), sum(D), mean(D), var(D){}
+    Stat(const size_t D) : count(0), sum(D), mean(D), var(D){}
+
+    size_t count;
+    std::vector<double> sum;
     std::vector<float> mean;
     std::vector<float> var;
 
+    void resize(const size_t size, const size_t D);
+
 };
+
 
 
 #endif //HI_STAT_HPP

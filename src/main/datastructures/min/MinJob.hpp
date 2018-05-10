@@ -9,7 +9,7 @@
 #include <execution>
 #endif
 #include "../rm/Job.hpp"
-#include "../Timer.hpp"
+#include "../../utils/Timer.hpp"
 #include "../../myomp.hpp"
 
 class MinItem : public WorkItem {

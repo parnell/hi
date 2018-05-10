@@ -38,7 +38,7 @@ std::vector<T> split(std::vector<T>& v, const int nparts, const int iteration=0)
 }
 
 template <typename T>
-std::vector<T*> pickPointers(const size_t N, const size_t C, const int k, T* pelems) {
+std::vector<T*> randRowPointers(const size_t N, const size_t C, const int k, T *pelems) {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::vector<T*> result(k);

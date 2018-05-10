@@ -7,8 +7,12 @@ typedef float dtype;
 #define dtype_f	"%.4f"
 #define dtype_inf "%f"
 
+enum IndexGroup {
+    IG_SPATIAL, IG_LSH
+};
+
 enum IndexTypes {
-    HI
+    IT_HI, IT_LSH, IT_KD
 };
 
 enum TagType {

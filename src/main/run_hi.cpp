@@ -1,4 +1,5 @@
 #include <iostream>
+#include <boost/thread.hpp>
 #include <boost/mpi.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/mpi/environment.hpp>
@@ -6,24 +7,24 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/mpi/collectives.hpp>  /// for gatherv
 #include <numeric>
+#include <boost/serialization/export.hpp>
 
 #include "datastructures/rm/WorkItem.hpp"
-#include "datastructures/rm/Worker.hpp"
+#include "datastructures/rm/Secondary.hpp"
 #include "datastructures/data.hpp"
-#include "datastructures/Euc.hpp"
-#include "datastructures/rm/Master.hpp"
+#include "datastructures/datatypes/Euc.hpp"
+#include "datastructures/rm/Primary.hpp"
 
 #include "dtypes.hpp"
 #include "globals.hpp"
 
-#include "datastructures/hi/HIBuildItem.hpp"
-#include "datastructures/hi/HIJob.hpp"
 
 #include "datastructures/min/MinJob.hpp"
-#include "datastructures/Timer.hpp"
+#include "utils/Timer.hpp"
 #include "utils/vecutil.hpp"
 #include "utils/stringutils.hpp"
-#include "datastructures/hi/HI.hpp"
+#include "datastructures/indexes/hi/job/HIBuildItem.hpp"
+#include "datastructures/indexes/hi/job/HIJob.hpp"
 
 
 namespace mpi = boost::mpi;
@@ -34,10 +35,9 @@ BOOST_CLASS_EXPORT_GUID(MinItem, "MinItem");
 BOOST_CLASS_EXPORT_GUID(ReturnResult, "ReturnResult");
 
 
-//typedef std::unique_ptr<Euc<int>> Dat;
-
 int main(int argc, char** argv) {
-    unsigned int nthreads = std::thread::hardware_concurrency();
+    unsigned int nthreads = boost::thread::hardware_concurrency();
+
     std::cout << "Starting argc=" << argc << std::endl;
     for (int k = 0; k < argc; ++k) {
         std::cout << argv[k] << " ";
@@ -89,8 +89,7 @@ int main(int argc, char** argv) {
     if (query){
         /// Verify query options
     }
-
-    mpi::environment env;
+    mpi::environment env(argc, argv, mpi::threading::multiple);
     mpi::communicator world;
     const int wsize = world.size();
     std::cout << "rank=" << world.rank() << "\tsize=" << wsize << "  nthreads=" << nthreads << std::endl;
@@ -110,14 +109,15 @@ int main(int argc, char** argv) {
         } else if (query){
 //            m.query();
         }
-        /// create master
-        Master<Dat> m;
+        /// create Primary
+        Primary m;
         m.addJob(pj);
-        m.runjobs();
+        m.runJobs();
     } else {
-        /// Create worker
-        Worker m(world.rank());
+        /// Create Secondary
+        Secondary m(world.rank());
         m.run();
     }
+
     return 0;
 }

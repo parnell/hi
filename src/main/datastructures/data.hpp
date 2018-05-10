@@ -4,10 +4,23 @@
 
 #include <string>
 #include <vector>
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/string.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/array.hpp>
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/list.hpp>
 
 #include "../dtypes.hpp"
 
 class Data {
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive &ar, const unsigned int version) {
+        ar & serial_number_;
+        ar & dist_;
+    }
 
 protected:
     size_t serial_number_;

@@ -1,8 +1,8 @@
 
 #ifndef HI_GLOBAL_INCLUDES_H
 #define HI_GLOBAL_INCLUDES_H
-#include "datastructures/Euc.hpp"
-#include "datastructures/dna.hpp"
+#include "datastructures/datatypes/Euc.hpp"
+#include "datastructures/datatypes/dna.hpp"
 
 //typedef Euc<float> Dat;
 //typedef Euc<float> Dat;

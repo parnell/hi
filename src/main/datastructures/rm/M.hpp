@@ -5,7 +5,10 @@
 #include <vector>
 #include <assert.h>
 #include <string.h>
-#include <boost/serialization/access.hpp>
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/array.hpp>
+
+#include <iostream>
 #include "../../globals.hpp"
 
 namespace rm {
@@ -29,10 +32,12 @@ class M {
 
     template<class Archive>
     void serialize(Archive &ar, const unsigned int version) {
-//        ar & boost::serialization::base_object<Matrix>(*this);
         ar & dim;
         ar & N;
-        ar & *dims;
+        if (Archive::is_loading::value) {
+            dims = new T[dim*N];
+        }
+        ar & boost::serialization::make_array(dims,dim*N);
     }
 
 public:
@@ -66,35 +71,33 @@ public:
     /**
      * Access the ith vector.
      */
-    const T *operator[](size_t i) const {
+    inline const T *operator[](size_t i) const {
         return dims + i * dim;
     }
 
     /**
      * Access the ith vector.
      */
-    T *operator[](size_t i) {
+    inline T *operator[](size_t i) {
         return dims + i * dim;
     }
 
     /**
      * Get the dimension.
      */
-    size_t getDim() const {
-        return dim;
-    }
+    inline size_t getDim() const { return dim; }
+    inline size_t getCols() const { return dim; }
 
     /**
      * Get the size.
      */
-    size_t getSize() const {
-        return N;
-    }
+    inline size_t getSize() const { return N; }
+    inline size_t getRows() const { return N; }
 
     /**
      * Get the data.
      */
-    T *getData() const {
+    inline T *getData() const {
         return dims;
     }
 
@@ -222,6 +225,32 @@ public:
     };
 
 
+    void print() const {
+        const size_t R = getSize();
+        const size_t C = getDim();
+        for (size_t r= 0; r< R; ++r){
+            for (size_t c = 0; c < C; ++c) {
+                std::cout << dims[r*C+c] << "  ";
+            }
+            std::cout << std::endl;
+        }
+    }
+    void print_rowp() const {
+        const size_t R = getSize();
+        const size_t C = getDim();
+        for (size_t r= 0; r< R; ++r){
+            std::cout << dims[r*C] << std::endl;
+        }
+    }
+
+    /**
+     * WARNING! Setting this without corresponding ROW and SIZE is extremely
+     * dangerous. Only used if confident you know what you are doing
+     * @param pdat
+     */
+    void setData(Dat *pdat) {
+        dims = pdat;
+    }
 };
 }
 

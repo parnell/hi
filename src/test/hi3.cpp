@@ -8,10 +8,10 @@
 //#include <numeric>
 //#include "../main/datastructures/rm/WorkItem.hpp"
 //#include "../main/utils/vecutil.hpp"
-//#include "../main/datastructures/rm/Worker.hpp"
+//#include "../main/datastructures/rm/Secondary.hpp"
 //#include "../main/datastructures/data.hpp"
 //#include "../main/datastructures/Euc.hpp"
-//#include "../main/datastructures/rm/Master.hpp"
+//#include "../main/datastructures/rm/Primary.hpp"
 //#include "../main/dtypes.hpp"
 //#include "../main/globals.hpp"
 //#include "../main/datastructures/hi/HIBuildItem.hpp"

@@ -73,7 +73,7 @@ TEST(utils, randpickptrs) {
             m[r*C+c] = (r+1)*C + c;
         }
     }
-    auto r= pickPointers<int>(R, C,  k, m);
+    auto r= randRowPointers<int>(R, C, k, m);
     EXPECT_EQ(r.size(), k);
 }
 

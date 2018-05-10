@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(COMPILE_TESTS 1)
+add_definitions(-DDEBUG_PRINT=1)
+add_definitions(-DDEBUG_LSH=0)
 
 if (COMPILE_TESTS)
     set(TEST_PROGRAMS src/test/testall.cpp)
@@ -13,11 +15,14 @@ if (COMPILE_TESTS)
     add_definitions(-DCOMPILE_TESTS=1)
 endif(COMPILE_TESTS)
 
+
 include(MPI.cmake) ###### MPI
 
 include(Boost.cmake) ###### Boost
 
 include(PatchOpenMPApple.cmake) ###### MPI
+
+#include(GSparseHash.cmake) ###### Googles Sparse Hash
 
 if(APPLE)
     find_package (HDF5)
@@ -40,31 +45,39 @@ endif()
 
 include(LSHBox.cmake) ###### LSHBox
 
-set(PROGRAMS src/main/run_hi.cpp)
+set(PROGRAMS src/main/run_hi.cpp src/test/stack.cpp)
 
 set(T2PROGRAMS src/test/hi2.cpp)
 
 set(T3PROGRAMS src/test/hi3.cpp)
 
-set(SOURCE_FILES src/main/utils/MasterQ.cpp src/main/utils/MasterQ.hpp src/main/datastructures/rm/WorkItem.cpp
+set(SOURCE_FILES src/main/datastructures/rm/WorkItem.cpp
         src/main/datastructures/rm/WorkItem.hpp src/main/utils/vecutil.cpp src/main/debug.hpp src/main/datastructures/data.hpp
-        src/main/globals.hpp src/main/datastructures/dna.cpp src/main/datastructures/dna.hpp
-        src/main/datastructures/hi/HI.cpp src/main/datastructures/hi/HI.hpp
-        src/main/datastructures/rm/Worker.cpp src/main/datastructures/rm/Worker.hpp
-        src/main/datastructures/rm/Master.cpp src/main/datastructures/rm/Master.hpp
-        src/main/datastructures/hi/Forest.cpp src/main/datastructures/hi/Forest.hpp src/main/datastructures/Euc.cpp
-        src/main/datastructures/Euc.hpp src/main/datastructures/Index.cpp src/main/datastructures/Index.hpp
-        src/main/loaders/loader.cpp src/main/loaders/loader.hpp src/main/dtypes.hpp src/main/datastructures/hi/HIBuildItem.cpp
-        src/main/datastructures/hi/HIBuildItem.hpp src/main/datastructures/hi/QueryItem.cpp src/main/datastructures/hi/QueryItem.hpp
-        src/main/datastructures/rm/Job.cpp src/main/datastructures/rm/Job.hpp src/main/datastructures/hi/HIJob.cpp
-        src/main/datastructures/hi/HIJob.cpp src/main/datastructures/hi/HIJob.hpp src/main/datastructures/rm/JobHandler.cpp
+        src/main/globals.hpp src/main/datastructures/datatypes/dna.cpp src/main/datastructures/datatypes/dna.hpp
+        src/main/datastructures/indexes/hi/HI.cpp src/main/datastructures/indexes/hi/HI.hpp
+        src/main/datastructures/rm/Secondary.cpp src/main/datastructures/rm/Secondary.hpp
+        src/main/datastructures/rm/Primary.cpp src/main/datastructures/rm/Primary.hpp
+        src/main/datastructures/datatypes/Euc.cpp
+        src/main/datastructures/datatypes/Euc.hpp src/main/datastructures/indexes/Index.cpp src/main/datastructures/indexes/Index.hpp
+        src/main/loaders/loader.cpp src/main/loaders/loader.hpp src/main/dtypes.hpp src/main/datastructures/indexes/hi/job/HIBuildItem.cpp
+        src/main/datastructures/indexes/hi/job/HIBuildItem.hpp src/main/datastructures/indexes/hi/job/QueryItem.cpp src/main/datastructures/indexes/hi/job/QueryItem.hpp
+        src/main/datastructures/rm/Job.cpp src/main/datastructures/rm/Job.hpp src/main/datastructures/indexes/hi/job/HIJob.cpp
+        src/main/datastructures/indexes/hi/job/HIJob.cpp src/main/datastructures/indexes/hi/job/HIJob.hpp src/main/datastructures/rm/JobHandler.cpp
         src/main/datastructures/rm/JobHandler.hpp src/main/datastructures/min/MinJob.cpp src/main/datastructures/min/MinJob.hpp
-        src/main/datastructures/Timer.cpp
-        src/main/datastructures/Timer.hpp src/main/utils/stringutils.hpp src/main/myomp.hpp
-        src/main/datastructures/hi/HIBuild.cpp src/main/datastructures/hi/HIBuild.hpp src/main/datastructures/rm/LoadBalancer.cpp
-        src/main/datastructures/rm/LoadBalancer.hpp src/main/datastructures/DataManager.cpp src/main/datastructures/DataManager.hpp
-        src/main/datastructures/hi/HITree.cpp src/main/datastructures/hi/HITree.hpp src/main/utils/statutil.cpp src/main/utils/statutil.hpp
-        src/main/datastructures/rm/M.cpp src/main/datastructures/rm/M.hpp src/main/datastructures/Stat.cpp src/main/datastructures/Stat.hpp)
+        src/main/utils/Timer.cpp
+        src/main/utils/Timer.hpp src/main/utils/stringutils.hpp src/main/myomp.hpp
+        src/main/datastructures/indexes/hi/job/HIBuild.cpp src/main/datastructures/indexes/hi/job/HIBuild.hpp src/main/datastructures/rm/LoadBalancer.cpp
+        src/main/datastructures/rm/LoadBalancer.hpp src/main/datastructures/controllers/DataManager.cpp src/main/datastructures/controllers/DataManager.hpp
+        src/main/datastructures/indexes/hi/HITree.cpp src/main/datastructures/indexes/hi/HITree.hpp src/main/utils/statutil.cpp src/main/utils/statutil.hpp
+        src/main/datastructures/rm/M.cpp src/main/datastructures/rm/M.hpp src/main/datastructures/Stat.cpp src/main/datastructures/Stat.hpp
+        src/main/datastructures/indexes/controllers/IndexDecider.cpp src/main/datastructures/indexes/controllers/IndexDecider.hpp
+        src/main/datastructures/indexes/controllers/Partitioner.cpp src/main/datastructures/indexes/controllers/Partitioner.hpp
+        src/main/datastructures/indexes/hi/indexwrappers/LSHWrapper.cpp src/main/datastructures/indexes/hi/indexwrappers/LSHWrapper.hpp
+        src/test/stack.cpp src/main/datastructures/indexes/controllers/PivotSelector.cpp src/main/datastructures/indexes/controllers/PivotSelector.hpp
+        src/main/datastructures/indexes/hi/HINode.cpp src/main/datastructures/indexes/hi/HINode.hpp src/main/utils/carray_iterator.cpp
+        src/main/utils/carray_iterator.hpp src/main/datastructures/indexes/controllers/PivotSorter.cpp src/main/datastructures/indexes/controllers/PivotSorter.hpp
+        src/main/utils/testutil.cpp src/main/utils/testutil.hpp src/main/datastructures/indexes/hi/indexwrappers/SpatialWrapper.cpp
+        src/main/datastructures/indexes/hi/indexwrappers/SpatialWrapper.hpp src/main/datastructures/indexes/hi/params.cpp src/main/datastructures/indexes/hi/params.hpp)
 
 
 foreach(program ${PROGRAMS} ${TEST_PROGRAMS})
