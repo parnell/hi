@@ -4,8 +4,8 @@
 #include "../../utils/carray_iterator.hpp"
 #include "../indexes/controllers/PivotSorter.hpp"
 #include <algorithm>    // std::sort
-#include <flann/flann.h>
-#include <flann/io/hdf5.h>
+//#include <flann/flann.h>
+//#include <flann/io/hdf5.h>
 #include "../../dprint.hpp"
 
 DataManager::DataManager() : deleteData(true) {};
@@ -30,17 +30,8 @@ DataManager *DataManager::sliceData(size_t _begin, size_t _end) {
 }
 
 Dat* DataManager::loadData(std::string filename){
-    std::string indexName = "data";
-    flann::Matrix<Dat> dataset;
-    load_from_file<Dat>(dataset, filename, indexName);
-
-//        lshbox::Matrix<Dat> data(filename);
-    Dat* pdat = dataset.ptr();
-    size_t rows = dataset.rows;
-    size_t cols = dataset.cols;
-    m.transfer(pdat, rows, cols);
-//    std::cout << "Loading Data !!!" << rows << " : " << cols << std::endl;
-    return pdat;
+    m.load(filename);
+    return m.getData();
 }
 
 size_t DataManager::getRows() const {
@@ -108,7 +99,7 @@ void DataManager::print_rowp() const {
 
 TEST(controllers, DM_test_load)
 {
-    std::string filename = sutil::sformat("%s/../data/tests/gaussian__d=14_s=10000_nclus=1_var=0.1.hdf5",
+    std::string filename = sutil::sformat("%s/../data/tests/gaussian__d=14_s=10000_nclus=1_var=0.1.bin",
                                           CMAKE_CURRENT_BINARY_DIR);
     DataManager mdat;
     mdat.loadData(filename);

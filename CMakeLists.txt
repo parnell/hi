@@ -39,7 +39,7 @@ if(APPLE)
     link_directories($ENV{HOME}/src/LSHBOX/include)
 
 elseif(UNIX)
-    include(Flann.cmake) ###### Flann
+#    include(Flann.cmake) ###### Flann
 
     include(HDF5.cmake) ###### HDF5
 endif()
@@ -87,7 +87,7 @@ foreach(program ${PROGRAMS} ${TEST_PROGRAMS})
     if(APPLE)
         target_link_libraries(${progname} PUBLIC ${_hdf5_libs})
     elseif(UNIX)
-        target_link_libraries(${progname} PUBLIC ${FLANN_LIBRARIES})
+#        target_link_libraries(${progname} PUBLIC ${FLANN_LIBRARIES})
     endif()
 
     target_link_libraries(${progname} PUBLIC ${MPI_LIBRARIES})
@@ -109,7 +109,7 @@ foreach(program ${T2PROGRAMS})
     if(APPLE)
         target_link_libraries(${progname} PUBLIC ${_hdf5_libs})
     elseif(UNIX)
-        target_link_libraries(${progname} PUBLIC ${FLANN_LIBRARIES})
+#        target_link_libraries(${progname} PUBLIC ${FLANN_LIBRARIES})
     endif()
     target_link_libraries(${progname} PUBLIC ${MPI_LIBRARIES})
     target_link_libraries(${progname} PUBLIC ${Boost_LIBRARIES} )
