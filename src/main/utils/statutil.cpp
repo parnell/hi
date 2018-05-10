@@ -41,8 +41,8 @@ TEST(utils, vartest1)
     EXPECT_EQ(stat.count, RS);
     EXPECT_EQ(stat.sum[0], 20);
     EXPECT_EQ(stat.sum[1], 40);
-    EXPECT_EQ(stat.var[0], 8);
-    EXPECT_EQ(stat.var[1], 32.00);
+    EXPECT_FLOAT_EQ(stat.var[0], 8.0);
+    EXPECT_FLOAT_EQ(stat.var[1], 32);
     EXPECT_EQ(stat.mean[0], 4);
     EXPECT_EQ(stat.mean[1], 8.00);
 }
