@@ -20,11 +20,13 @@ const unsigned int _N = 4; /// Binary code bytes, (has to be less than D)
 const int _MIN_ROWS_LSH = 100;
 
 
-HINode::HINode() :parent(nullptr), plsh(nullptr), ppivots(nullptr), leafPoints(nullptr), pchildren(nullptr) {
+HINode::HINode() :parent(nullptr), plsh(nullptr), ppivots(nullptr), leafPoints(nullptr), pchildren(nullptr),
+                  is_leaf_(false), pspatial(nullptr), indexType(IT_NONE) {
 
 }
 
-HINode::HINode(HITree *parent): parent(parent), plsh(nullptr), ppivots(nullptr), leafPoints(nullptr), pchildren(nullptr) {
+HINode::HINode(HITree *parent): parent(parent), plsh(nullptr), ppivots(nullptr), leafPoints(nullptr), pchildren(nullptr),
+                                is_leaf_(false), pspatial(nullptr), indexType(IT_NONE) {
 
 }
 
@@ -118,11 +120,11 @@ void HINode::setIsLeaf(bool is_leaf_) {
     HINode::is_leaf_ = is_leaf_;
 }
 
-IndexTypes HINode::getIndexType() const {
+IndexType HINode::getIndexType() const {
     return indexType;
 }
 
-void HINode::setIndexType(IndexTypes indexType) {
+void HINode::setIndexType(IndexType indexType) {
     HINode::indexType = indexType;
 }
 

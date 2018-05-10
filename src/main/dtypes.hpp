@@ -11,8 +11,8 @@ enum IndexGroup {
     IG_SPATIAL, IG_LSH
 };
 
-enum IndexTypes {
-    IT_HI, IT_LSH, IT_KD
+enum IndexType {
+    IT_HI, IT_LSH, IT_KD, IT_NONE
 };
 
 enum TagType {

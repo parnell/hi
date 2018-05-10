@@ -27,6 +27,7 @@ class HITree {
         ar & buildParams;
         ar & queryParams;
         ar & buildResults;
+        ar & queryResults;
     }
 
     DataManager *pdata;

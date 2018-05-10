@@ -32,23 +32,25 @@ class HINode {
     }
 
     HITree* parent;
+    std::vector<Dat*>* ppivots;
+    std::vector<HINode*>* pchildren;
 
     bool is_leaf_;
+    DataManager* leafPoints;
+    LSHWrapper* plsh;
+    SpatialWrapper* pspatial;
+    IndexType indexType;
+
 public:
     bool isLeaf() const;
 
     void setIsLeaf(bool is_leaf_);
 
-    IndexTypes getIndexType() const;
+    IndexType getIndexType() const;
 
-    void setIndexType(IndexTypes indexType);
-    std::vector<Dat*>* ppivots;
-    DataManager* leafPoints;
-    std::vector<HINode*>* pchildren;
+    void setIndexType(IndexType indexType);
 
 private:
-    LSHWrapper* plsh;
-    SpatialWrapper* pspatial;
 public:
     LSHWrapper *getLSH() const;
 
@@ -56,7 +58,6 @@ public:
 
 private:
 
-    IndexTypes indexType;
 
 public:
     HINode();
