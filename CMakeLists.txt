@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(hi)
 
+message(" OS SYSTEM Apple=" ${APPLE} ", Unix=" ${UNIX})
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -32,15 +33,15 @@ if(APPLE)
 
     include_directories($ENV{HOME}/src/LSHBOX/include)
 
-    link_directories(/usr/local/include/flann)
+#    link_directories(/usr/local/include/flann)
     #link_directories($ENV{HOME}/src/flann/b)
     link_directories(/usr/local/Cellar/hdf5/1.10.1_2/lib)
     link_directories($ENV{HOME}/src/LSHBOX/include)
 
 elseif(UNIX)
-    include(Flann.cmake) ###### Flann
-
     include(HDF5.cmake) ###### HDF5
+
+    include(Flann.cmake) ###### Flann
 endif()
 
 include(LSHBox.cmake) ###### LSHBox

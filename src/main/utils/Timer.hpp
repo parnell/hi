@@ -3,12 +3,11 @@
 #define HI_TIMER_HPP
 
 
-#include "../../../../../../../../Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1/ctime"
-#include "../../../../../../../../Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1/chrono"
-#include "../../../../../../../../Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1/ratio"
-#include "../../../../../../../../Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1/string"
-#include "../../../../../../../../Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1/iostream"
-#include "../../../../../../../../Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1/iomanip"
+#include <chrono>
+#include <string>
+#include <iostream>
+#include <ratio>
+#include <iomanip>
 
 using namespace std::chrono;
 
@@ -63,7 +62,7 @@ public:
         t_mark = std::chrono::high_resolution_clock::now();
     }
     ~Timer(){
-        fromStart("", "\n");
+        fromStart(std::string(""), std::string("\n"));
     }
 };
 

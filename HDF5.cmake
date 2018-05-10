@@ -10,8 +10,8 @@ if(APPLE)
     link_directories($ENV{HOME}/src/LSHBOX/include)
 
 elseif(UNIX)
-    find_package(HDF5 REQUIRED COMPONENTS C CXX)
-
+#    find_package(HDF5 REQUIRED COMPONENTS C CXX)
+    find_package(HDF5 REQUIRED COMPONENTS )
     if(NOT HDF5_INCLUDE_DIRS)
         message(SEND_ERROR "couldn't find include dirs!!!!!!")
     endif(NOT HDF5_INCLUDE_DIRS)
