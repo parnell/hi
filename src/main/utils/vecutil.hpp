@@ -10,9 +10,9 @@
 
 namespace vecutil{
 
-inline std::unordered_set<size_t> pickSet(size_t N, int k, std::mt19937& gen);
+std::unordered_set<size_t> pickSet(size_t N, int k, std::mt19937& gen);
 
-inline std::vector<size_t> pick(size_t N, int k) ;
+std::vector<size_t> pick(size_t N, int k) ;
 
 // Functor for deleting pointers in vector.
 template<class T> class DeleteVector {
