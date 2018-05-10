@@ -3,6 +3,8 @@
 #define HI_STAT_HPP
 
 #include <vector>
+#include <iostream>
+#include <cstddef>
 
 struct SingleStat {
     friend std::ostream& operator<<(std::ostream&, const SingleStat&);
@@ -11,7 +13,7 @@ struct SingleStat {
     float mean;
     float var;
 
-    void add(const float d);
+    void add(float d);
 };
 
 struct Stat {
@@ -25,7 +27,7 @@ struct Stat {
     std::vector<float> mean;
     std::vector<float> var;
 
-    void resize(const size_t size, const size_t D);
+    void resize(size_t size, size_t D);
 
 };
 

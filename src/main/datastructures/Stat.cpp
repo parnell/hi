@@ -2,7 +2,7 @@
 #include "Stat.hpp"
 #include <iostream>
 
-void Stat::resize(const size_t size, const size_t D) {
+void Stat::resize(size_t size, size_t D) {
     sum.resize(D);
     mean.resize(D);
     var.resize(D);
@@ -18,7 +18,7 @@ std::ostream& operator<< (std::ostream& os, const SingleStat& stat) {
     return os;
 }
 
-void SingleStat::add(const float val) {
+void SingleStat::add(float val) {
     sum+=val;
 
 

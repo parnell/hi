@@ -3,6 +3,7 @@
 #define HI_LOADBALANCER_HPP
 
 #include <vector>
+#include <cstddef>
 
 class LoadBalancer {
 
