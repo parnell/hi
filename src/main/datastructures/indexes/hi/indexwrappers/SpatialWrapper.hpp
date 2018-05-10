@@ -3,7 +3,7 @@
 #define HI_SPATIAL_HPP
 
 
-#include <flann/flann.h>
+//#include <flann/flann.h>
 #include "../../../../globals.hpp"
 #include "../HITree.hpp"
 #include "../params.hpp"
@@ -18,9 +18,9 @@ class SpatialWrapper {
 //        ar & pkd;
     }
 
-    flann::KDTreeIndex<flann::L2<Dat>> *pkd;
+//    flann::KDTreeIndex<flann::L2<Dat>> *pkd;
 public:
-    SpatialWrapper();
+//    SpatialWrapper();
     std::vector<DataManager*> build(const HIBuildParams &params, DataManager *pManager, int depth);
 };
 

@@ -16,8 +16,8 @@ std::vector<DataManager*> SpatialWrapper::build(const HIBuildParams &params, Dat
 //    return p.partition(params, pdata, depth);
 }
 
-SpatialWrapper::SpatialWrapper() : pkd(nullptr) {
-
-}
+//SpatialWrapper::SpatialWrapper() : pkd(nullptr) {
+//
+//}
 
 }

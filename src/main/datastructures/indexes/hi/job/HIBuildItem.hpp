@@ -9,9 +9,9 @@
 #include "../../../controllers/DataManager.hpp"
 //#include "HI.hpp"
 #include <string>
-#include <flann/flann.hpp>
-#include <flann/io/hdf5.h>
-#include <flann/util/matrix.h>
+//#include <flann/flann.hpp>
+//#include <flann/io/hdf5.h>
+//#include <flann/util/matrix.h>
 //#include <lshbox/basis.h>
 //#include <lshbox/metric.h>
 //#include <lshbox/topk.h>
