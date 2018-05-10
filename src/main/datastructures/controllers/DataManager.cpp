@@ -4,8 +4,10 @@
 #include "../../utils/carray_iterator.hpp"
 #include "../indexes/controllers/PivotSorter.hpp"
 #include <algorithm>    // std::sort
+#include <flann/flann.h>
 #include <flann/io/hdf5.h>
 #include "../../dprint.hpp"
+
 DataManager::DataManager() : deleteData(true) {};
 
 DataManager::DataManager(Dat *pdata, size_t rows, size_t cols, bool shouldTransfer, bool deleteData) : deleteData(deleteData) {
