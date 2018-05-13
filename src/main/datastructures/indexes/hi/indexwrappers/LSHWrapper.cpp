@@ -8,17 +8,47 @@
 #include <lshbox/lsh/shlsh.h>
 #include <lshbox/lsh/dbqlsh.h>
 #include <lshbox/lsh/kdbqlsh.h>
+#include "../../../../dprint.hpp"
 
+class HITree;
+
+const unsigned int _M = 500; ///(521) Hash table size
+const unsigned int _L = 5; /// Number of hash tables
+const unsigned int _S = 100; /// Size of vectors in train
+const unsigned int _I = 5;/// Training iterations
+const unsigned int _N = 4; /// Binary code bytes, (has to be less than D)
+
+const int _MIN_ROWS_LSH = 100;
 
 
 LSHWrapper::LSHWrapper(LSHTYPE lshtype, int D, int M, int L, int S, int I, int N) :
-M(M), L(L), D(D), S(S), I(I), N(N){
-    this->lshtype = lshtype;
+        M(M), L(L), D(D), S(S), I(I), N(N), lshtype(lshtype), pdata(nullptr){
     assert (lshtype != RBS); /// not implemented
     assert (lshtype != TH); /// not implemented
     assert (lshtype != RHP); /// not implemented
 //    std::cout << "LSHWrapper\tD=" << D << "\tM=" << M << "\tL=" << L << "\tS=" << S << "\tI=" << I << "\tN="<<N<< std::endl;
 }
+
+/**
+ * If used, must still set paramaters M,L,D,S,I,N
+ * @param lshtype
+ */
+LSHWrapper::LSHWrapper(LSHTYPE lshtype, const size_t R, const size_t C) :
+        M(0), L(0), D(0), S(0), I(0), N(0), lshtype(lshtype), pdata(nullptr){
+    assert (lshtype != RBS); /// not implemented
+    assert (lshtype != TH); /// not implemented
+    assert (lshtype != RHP); /// not implemented
+    setDefaultParams(R, C);
+//    std::cout << "LSHWrapper\tD=" << D << "\tM=" << M << "\tL=" << L << "\tS=" << S << "\tI=" << I << "\tN="<<N<< std::endl;
+}
+
+LSHWrapper::~LSHWrapper() {
+//    if (pdata){
+//        delete pdata;
+//    }
+}
+
+
 
 void LSHWrapper::load(const string& filename){
     switch(lshtype){
@@ -44,10 +74,11 @@ void LSHWrapper::save(const string& filename){
     }
 }
 
-lshbox::Scanner<lshbox::Matrix<Dat>::Accessor> LSHWrapper::query(Dat *point, const int k) {
+lsh_scanner LSHWrapper::query(Dat *point, const int k) {
     auto am = lshbox::Metric<Dat>(D, L2_DIST );
-    lshbox::Matrix<Dat>::Accessor accessor(data);
-    lshbox::Scanner<lshbox::Matrix<Dat>::Accessor> scanner(accessor,am,k);
+    lshbox::Matrix<Dat>::Accessor accessor(*pdata);
+    lsh_scanner scanner(accessor,am,k);
+    scanner.reset(point);
     itq.query(point, scanner);
     return scanner;
 }
@@ -68,9 +99,9 @@ void LSHWrapper::query(lshbox::Benchmark& bench,
 }
 
 void LSHWrapper::hash(Dat* pdata, const int R, const int C) {
-//    lshbox::Matrix<Dat> data;
-    data.transfer(pdata, R, C);
-    lshbox::Matrix<Dat>::Accessor accessor(data);
+    this->pdata = new lshbox::Matrix<Dat>();
+    this->pdata->transfer(pdata, R, C); /// Careful, potentially doesn't like being part of a tree and transferring
+    lshbox::Matrix<Dat>::Accessor accessor(*this->pdata);
 
     hash();
 }
@@ -89,8 +120,8 @@ void LSHWrapper::hash(){
             itqp.I = I; /// Training iterations
 
             itq.reset(itqp);
-            itq.train(data);
-            itq.hash(data);
+            itq.train(*pdata);
+            itq.hash(*pdata);
             break;
 
 //            case KDBQ:
@@ -141,6 +172,24 @@ void LSHWrapper::hash(){
     }
 }
 
+size_t LSHWrapper::size() const {
+    return pdata->getSize();
+}
+
+void LSHWrapper::setDefaultParams(const size_t R, const size_t C) {
+    const auto r = static_cast<unsigned int>(R);
+    assert(R > 2);
+    /** int D=2, int M=500, int L=5, int S = 100, int I = 5*/
+    M = R > _MIN_ROWS_LSH ? _M : std::max(static_cast<unsigned int>(2), r / 2);
+    L = _L;
+    D = static_cast<unsigned int>(C);
+    S = R > _MIN_ROWS_LSH ? _S : std::max(static_cast<unsigned int>(2), r / 2);
+    I = _I;
+    N = C > _N ? _N : std::min(static_cast<unsigned int>(C), _N);
+
+    dprintf("%d %d %d %d %d N=%d \n", M, L, D, S, I, N);
+}
+
 
 #if COMPILE_TESTS
 #include "gtest/gtest.h"
@@ -176,14 +225,6 @@ TEST(utils, LSHWrapper_matrix_serialization)
     }
 }
 
-const unsigned int _M = 500; ///(521) Hash table size
-const unsigned int _L = 5; /// Number of hash tables
-const unsigned int _S = 100; /// Size of vectors in train
-const unsigned int _I = 5;/// Training iterations
-const unsigned int _N = 4; /// Binary code bytes, (has to be less than D)
-
-const int _MIN_ROWS_LSH = 100;
-
 
 TEST(hi, LSHWrapper_wrapper_serialization)
 {
@@ -192,14 +233,10 @@ TEST(hi, LSHWrapper_wrapper_serialization)
     int k = 3;
     const auto r = static_cast<unsigned int>(R);
     auto m = testutil::makeM(R, C);
-    unsigned int M = R > _MIN_ROWS_LSH ? _M : std::min(r, r/2);
-    unsigned int L = _L;
-    unsigned int S = R > _MIN_ROWS_LSH ? _S : std::min(r, r/2);
-    unsigned int I = _I;
-    unsigned int N = C > _N ? _N : std::min(static_cast<unsigned int>(C), _N);
 ///LSHWrapper::LSHWrapper(LSHTYPE lshtype, int D, int M, int L, int S, int I) :
-    LSHWrapper lsh(LSHTYPE::ITQ, C, M, L, S, I, N);
+    LSHWrapper lsh(LSHTYPE::ITQ, R, C);
     lsh.hash(m, R, C);
+    EXPECT_EQ(lsh.size(), R);
 
     std::ofstream ofs("lshw_wrapper_serialization.idx");
     {
@@ -214,13 +251,12 @@ TEST(hi, LSHWrapper_wrapper_serialization)
     }
     EXPECT_EQ(lsh.D, lsh2.D);
     int pidx = 3;
-    auto scanner = lsh.query(&m[pidx * C],k);
-    auto scanner2 = lsh2.query(&m[pidx * C],k);
-    EXPECT_EQ(scanner.cnt(), scanner2.cnt());
-    scanner.topk().genTopk();
-    scanner2.topk().genTopk();
-    auto res1 = scanner.topk().getTopk();
-    auto res2 = scanner2.topk().getTopk();
+    auto scan1 = lsh.query(&m[pidx * C],k);
+    auto scan2 = lsh2.query(&m[pidx * C],k);
+    scan1.topk().genTopk();
+    scan2.topk().genTopk();
+    auto res1 = scan1.topk().getTopk();
+    auto res2 = scan2.topk().getTopk();
     auto it1 = res1.begin();
     auto it2 = res2.begin();
     for (; it1 != res1.end(); ++it1, ++it2 ){

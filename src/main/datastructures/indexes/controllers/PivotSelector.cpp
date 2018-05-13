@@ -42,7 +42,7 @@ TEST(utils, findpivot_fast)
             m[r*C+c] = r*(c+1); }
     }
     PivotSelector ps;
-    DataManager mdat(m, R, C, true, true);
+    DataManager mdat(m, R, C, true, true, 0);
 //    mdat.print();
     Dat* pivot = ps.findPivot(&mdat, nullptr);
     EXPECT_EQ(pivot[0],5.0);

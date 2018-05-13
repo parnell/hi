@@ -12,6 +12,8 @@
 //using namespace lshbox;
 using std::string;
 
+typedef lshbox::Scanner<lshbox::Matrix<Dat>::Accessor> lsh_scanner;
+
 enum LSHTYPE {
     KDBQ, /// Zhu, H. (2014) K-means based double-bit quantization for hashing.
     ITQ, /// Gong et al (2013).  Iterative quantization: A procrustean approach to learning binary codes
@@ -23,6 +25,8 @@ enum LSHTYPE {
     TH /// Wang et al (2007). Image Similarity Search with Compact Data Structures
 };
 
+class HIQueryResults;
+
 class LSHWrapper {
 //    lshbox::kdbqLsh<Dat> kdbq;
 //    lshbox::dbqLsh<Dat> dbq;
@@ -30,7 +34,7 @@ class LSHWrapper {
 ////    lshbox::rbsLsh<Dat> rbs;
 //    lshbox::shLsh<Dat> sh;
     LSHTYPE lshtype = ITQ;
-    lshbox::Matrix<Dat> data;
+    lshbox::Matrix<Dat>* pdata;
     lshbox::itqLsh<Dat> itq;
 public:
     friend class boost::serialization::access;
@@ -54,13 +58,16 @@ public:
         ar & I;
         ar & N;
         ar & T;
-        ar & data;
+        ar & pdata;
         ar & itq;
 
     }
 
-    LSHWrapper(LSHTYPE lshtype, int D=2, int M=500, int L=5, int S = 100, int I = 5, int N=4);
+    LSHWrapper(LSHTYPE lshtype, int D, int M, int L, int S, int I, int N);
+    LSHWrapper(LSHTYPE lshtype,const size_t R, const size_t C);
     LSHWrapper() = default;
+    ~LSHWrapper();
+    void setDefaultParams(const size_t R, const size_t C);
 
     void load(const string& filename);
 
@@ -70,12 +77,14 @@ public:
                lshbox::Matrix<float>& data,
                lshbox::Scanner<lshbox::Matrix<float>::Accessor>& scanner,
                unsigned int index);
-    lshbox::Scanner<lshbox::Matrix<Dat>::Accessor> query(Dat* point, const int k);
-
+    lsh_scanner query(Dat* point, const int k);
 
     void hash();
     void hash(Dat* pdata, const int R, const int C);
 
+    size_t size() const;
+
+    std::vector<size_t> idxs;
 };
 
 #endif //HI_LSHWRAPPER_HPP

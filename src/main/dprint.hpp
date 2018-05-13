@@ -8,6 +8,10 @@
 #define dcout(x) (std::cout << (x))
 #define dcoutl(x) (std::cout << (x) << std::endl)
 #define dprintf(fmt, args...) printf(fmt, ##args)
+#define dtprintf(n, fmt, args...) \
+    do {\
+        for (size_t __r = 0; __r< n; ++__r){std::cout << "  ";} printf(fmt, ##args);\
+    } while (0)
 #define dprintca(a,R,C) do {\
         std::cout << " [";\
 for (size_t __r = 0; __r< R; ++__r){ \
@@ -31,6 +35,7 @@ for (size_t __r = 0; __r< R; ++__r){ \
 #define dcout(x)
 #define dcoutl(x)
 #define dprintf(fmt, args...)
+#define dtprintf(n, fmt, args...)
 #define dprintca(a,R,C)
 #define dprintcap(a,R,C)
 #endif

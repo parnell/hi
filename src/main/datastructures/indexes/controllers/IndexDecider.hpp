@@ -10,7 +10,7 @@
 
 struct DecideResult{
     IndexGroup indexGroup;
-    Dat* pivot;
+    std::pair<size_t,std::vector<Dat>>  idxpivot;
     std::vector<DataManager*> data;
 };
 

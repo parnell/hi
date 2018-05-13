@@ -28,6 +28,7 @@ class HITree {
         ar & queryParams;
         ar & buildResults;
         ar & queryResults;
+        ar & pdata;
     }
 
     DataManager *pdata;
@@ -52,13 +53,14 @@ public:
 
     void setDecider(IndexDecider *pdecider);
 
+    void printQueryResults() ;
 
 public:
     HITree();
     HITree(DataManager *pdata);
 
     virtual void build(int depth = 0);
-    virtual void query(int depth = 0);
+    virtual void knnquery(Dat* queryPoint, int depth = 0);
 };
 
 

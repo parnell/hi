@@ -7,16 +7,29 @@
 //#include <flann/flann.h>
 //#include <flann/io/hdf5.h>
 #include "../../dprint.hpp"
+#include <numeric>
 
 DataManager::DataManager() : deleteData(true) {};
 
-DataManager::DataManager(Dat *pdata, size_t rows, size_t cols, bool shouldTransfer, bool deleteData) : deleteData(deleteData) {
+DataManager::DataManager(Dat *pdata, size_t rows, size_t cols, bool shouldTransfer, bool deleteData, std::vector<size_t> idxs) :
+        deleteData(deleteData), idxs(idxs) {
     if (shouldTransfer){
         m.transfer(pdata, rows, cols);
     } else {
         m.load(pdata, rows, cols);
     }
+
+}
+DataManager::DataManager(Dat* pdata, size_t rows, size_t cols, bool shouldTransfer, bool deleteData, size_t startingIdx):
+        deleteData(deleteData), idxs(rows){
+    if (shouldTransfer){
+        m.transfer(pdata, rows, cols);
+    } else {
+        m.load(pdata, rows, cols);
+    }
+    std::iota(idxs.begin(), idxs.end(), startingIdx);
 //    dprintf("   DATAN  ###  %p \n", m[0]);
+
 }
 DataManager::~DataManager() {
     if (! deleteData){
@@ -26,7 +39,8 @@ DataManager::~DataManager() {
 
 DataManager *DataManager::sliceData(size_t _begin, size_t _end) {
 //    dprintf("     ### slicing  %ld   %ld    %ld    %p\n", _begin, _end,   _end - _begin, m[_begin]);
-    return new DataManager(m[_begin], _end - _begin, getCols(), true, false);
+    return new DataManager(m[_begin], _end - _begin, getCols(), true, false,
+                           std::vector<size_t>(idxs.begin()+_begin, idxs.begin()+_end));
 }
 
 Dat* DataManager::loadData(std::string filename){
@@ -74,21 +88,30 @@ struct MyComp {
 
 void DataManager::sort(Dat *pivot) {
     PivotSorter sorter(m.getData(),m.getRows(),m.getCols());
-    sorter.sort(pivot);
-//    const size_t R = m.getRows();
-//    const size_t C = m.getCols();
-//    Dat* pd = m.getData();
-//    std::vector<Dat *> rows(R);
-//    for (size_t i = 0; i < R; ++i) {
-//        rows[i] = &pd[i*C]; }
-//    std::sort(std::begin(rows), std::end(rows), MyComp(pivot));
-
+    sorter.sort(idxs, pivot);
 }
 
 void DataManager::print_rowp() const {
     m.print_rowp();
 }
 
+std::ostream &operator<<(std::ostream &os, DataManager &dm) {
+    const size_t R = dm.getRows();
+    const size_t C = dm.getCols();
+    auto a = dm.getDat();
+    os << " [";
+    for (size_t __r = 0; __r< R; ++__r){
+        os << "\t" << __r << "\t" << dm.idxs[__r] << "[ ";\
+        for (size_t __c = 0; __c < C; ++__c) {
+            os << a[__r*C+__c] << " ";
+        }
+        os << "]";
+        if (__r != R-1)
+            os << std::endl << "  ";
+    }
+    os << "]" << std::endl;
+    return os;
+}
 
 
 #if COMPILE_TESTS
@@ -112,10 +135,9 @@ TEST(controllers, DM_construction_Memory)
     const int C = 2;
     auto m = testutil::makeM(R, C);
 
-    DataManager mdat(m, R, C, true, true);
-    Dat* pbeg = mdat.getDat();
+    DataManager mdat(m, R, C, true, true, 0);
     EXPECT_EQ(mdat.getDat(), m);
-    DataManager mdat2(m, R, C, false,true);
+    DataManager mdat2(m, R, C, false,true, 0);
     EXPECT_NE(mdat2.getDat(), m);
 }
 
@@ -124,7 +146,7 @@ TEST(controllers, DM_test_serialize)
     const int R = 10;
     const int C = 2;
     auto m = testutil::makeM(R, C);
-    DataManager dat(m, R,C, false,true);
+    DataManager dat(m, R,C, false,true, 0);
 
     std::ofstream ofs("dm_test_serialize.idx");
     {
@@ -139,6 +161,7 @@ TEST(controllers, DM_test_serialize)
         ia >> newdat;
     }
     for (int i = 0; i < R; ++i) {
+        EXPECT_LE(dat.idxs[i], R);
         for (int j = 0; j <C; ++j) {
             EXPECT_EQ(dat.m[i][j], newdat.m[i][j]);
         }
@@ -150,25 +173,30 @@ TEST(controllers, DM_test_slice)
     unsigned int R = 10;
     unsigned int C = 2;
     auto m = testutil::makeM(R, C);
-    DataManager dat(m, R,C, false,true);
+    DataManager dat(m, R,C, false,true, 0);
     DataManager *pdat1 = dat.sliceData(0, R / 2);
     DataManager *pdat2 = dat.sliceData(R / 2, R);
     EXPECT_EQ(pdat1->getRows(), R/2);
     EXPECT_EQ(pdat2->getRows(), R/2);
     for (int i = 0; i < R/2; ++i) {
+        EXPECT_LE(pdat1->idxs[i], R);
+        EXPECT_LE(pdat2->idxs[i], R);
         EXPECT_EQ(pdat1->m[i], dat.m[i]);
         EXPECT_EQ(pdat2->m[i], dat.m[R/2 + i]);
+        EXPECT_EQ(pdat1->idxs[i], i);
+        EXPECT_EQ(pdat2->idxs[i], static_cast<int>(i+R/2));
     }
-
     R = 11;
     const int R2 = R/2;
     auto m2 = testutil::makeM(R, C);
-    DataManager dat2(m2, R, C, false,true);
+    DataManager dat2(m2, R, C, false,true, 0);
     pdat1 = dat2.sliceData(0, R / 2);
     pdat2 = dat2.sliceData(R / 2, R);
     EXPECT_EQ(pdat1->getRows(), R/2);
     EXPECT_EQ(pdat2->getRows(), R/2 +1);
     for (int i = 0; i < R/2; ++i) {
+        EXPECT_LE(pdat1->idxs[i], R);
+        EXPECT_LE(pdat2->idxs[i], R);
         EXPECT_EQ(pdat1->m[i], dat2.m[i]);
         EXPECT_EQ(pdat2->m[i], dat2.m[R/2 + i]);
     }
@@ -179,8 +207,23 @@ TEST(controllers, DM_test_slice)
     for (int i = 0; i < R2-3; ++i) {
         EXPECT_EQ(pdat2->m[R2-3 + i], pdat3->m[i]);
     }
-
 }
+
+
+//
+//TEST(controllers, DM_test_sort)
+//{
+//    unsigned int R = 10;
+//    unsigned int C = 2;
+//    int pidx = 3;
+//    auto m = testutil::makeM(R, C);
+//    DataManager dat(m, R,C, false,true, 0);
+//    dat.sort(&m[pidx*C]);
+//    EXPECT_EQ(dat.idxs[0], pidx);
+//    pidx = 8;
+//    dat.sort(&m[pidx*C]);
+//    EXPECT_EQ(dat.idxs[0], pidx);
+//}
 
 #endif
 

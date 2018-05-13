@@ -28,11 +28,33 @@ class HINode {
         ar & indexType;
         ar & plsh;
         ar & pspatial;
+//
+//        if (Archive::is_loading::value) {
+//            size_t npivots;
+//            ar & npivots;
+//            if (npivots > 0){
+//                ppivots = new std::vector<std::pair<size_t,Dat*>>(npivots);
+//                for (size_t i = 0; i < npivots; ++i) {
+//                    Dat* d;
+//                    ar & d;
+//                    (*ppivots)[i] = d;
+//                }
+//            }
+//        } else {
+//            size_t npivots = ppivots ? ppivots->size() : 0;
+//            ar & npivots;
+//            for (size_t i = 0; i < npivots; ++i) {
+//                ar & ppivots[i];
+//            }
+//        }
         ar & pchildren;
+        ar & parent;
+        ar & ppivots;
+        ar & leafPoints;
     }
 
     HITree* parent;
-    std::vector<Dat*>* ppivots;
+    std::vector<std::pair<size_t,std::vector<Dat> >>* ppivots;
     std::vector<HINode*>* pchildren;
 
     bool is_leaf_;
@@ -65,11 +87,17 @@ public:
     ~HINode();
     void firstsplit(const HIBuildParams& params, DataManager* pdata);
 
-    void build(const HIBuildParams& params, DataManager *pdata, int depth);
+    std::vector<HINode*>* getpChildren() const;
+    DataManager* getLeafPoints() const;
 
-    void query(const HIQueryParams& params, int depth);
+    void build(const HIBuildParams& params, DataManager *pdata, int depth);
+    std::vector<std::pair<size_t,std::vector<Dat> >>* getPivots() const;
+    void knnquery(Dat* queryPoint, int depth);
 
     void createLeaf(const HIBuildParams &params, DataManager *pManager, int depth);
+
+    void searchLeaf(Dat* queryPoint, int depth);
+
 };
 
 }

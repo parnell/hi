@@ -29,6 +29,7 @@ class M {
     size_t N;
 
     T *dims;
+    bool isTransferred;
 
     template<class Archive>
     void serialize(Archive &ar, const unsigned int version) {
@@ -50,20 +51,20 @@ public:
     void reset(size_t _dim, size_t _N) {
         dim = _dim;
         N = _N;
-        if (dims != NULL) {
+        if (dims != NULL && !isTransferred) {
             delete[] dims;
         }
         dims = new T[dim * N];
     }
 
-    M() : dim(0), N(0), dims(NULL) {}
+    M() : dim(0), N(0), dims(NULL), isTransferred(false) {}
 
-    M(size_t _dim, size_t _N) : dims(NULL) {
+    M(size_t _dim, size_t _N) : dims(NULL), isTransferred(false) {
         reset(_dim, _N);
     }
 
     ~M() {
-        if (dims != NULL) {
+        if (dims != NULL && !isTransferred) {
             delete[] dims;
         }
     }
@@ -146,6 +147,7 @@ public:
  * @param _dim   Dimension of each vector
  */
     void transfer(T *source, size_t _N, size_t _dim) {
+        isTransferred = true;
         dims = source;
         dim = _dim;
         N = _N;
@@ -181,10 +183,20 @@ public:
         return *this;
     }
 
-    float dist(const Dat *vec1, const Dat *vec2) const
+    inline static float dist(const Dat *vec1, const Dat *vec2, const size_t C)
     {
         float dist_ = 0.0;
-        for (unsigned i = 0; i != dim; ++i)
+        for (unsigned i = 0; i != C; ++i)
+        {
+            dist_ += sqr(vec1[i] - vec2[i]);
+        }
+        return std::sqrt(dist_);
+    }
+
+    inline static float dist(const std::vector<Dat> vec1, const Dat *vec2, const size_t C)
+    {
+        float dist_ = 0.0;
+        for (unsigned i = 0; i != C; ++i)
         {
             dist_ += sqr(vec1[i] - vec2[i]);
         }
