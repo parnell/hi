@@ -58,6 +58,7 @@ public:
 public:
     HITree();
     HITree(DataManager *pdata);
+    ~HITree();
 
     virtual void build(int depth = 0);
     virtual void knnquery(Dat* queryPoint, int depth = 0);

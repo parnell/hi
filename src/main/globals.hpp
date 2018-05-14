@@ -9,6 +9,7 @@
 template<typename T>
 T sqr(T x) { return x * x; }
 
+typedef float dist_type;
 typedef float Dat;
 #define TIME_MS 1000000
 const long long REBALANCE_TIME_NS = TIME_MS * 500;

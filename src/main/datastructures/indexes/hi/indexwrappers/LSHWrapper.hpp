@@ -9,6 +9,7 @@
 #include <lshbox/lsh/itqlsh.h>
 
 #include "../../../../globals.hpp"
+#include <atomic>
 //using namespace lshbox;
 using std::string;
 
@@ -35,8 +36,8 @@ class LSHWrapper {
 //    lshbox::shLsh<Dat> sh;
     LSHTYPE lshtype = ITQ;
     lshbox::Matrix<Dat>* pdata;
-    lshbox::itqLsh<Dat> itq;
 public:
+    lshbox::itqLsh<Dat> itq;
     friend class boost::serialization::access;
 
     unsigned int M; ///(521) Hash table size
@@ -77,7 +78,7 @@ public:
                lshbox::Matrix<float>& data,
                lshbox::Scanner<lshbox::Matrix<float>::Accessor>& scanner,
                unsigned int index);
-    lsh_scanner query(Dat* point, const int k);
+    lsh_scanner query(Dat* point, const int k, std::atomic<size_t>& distcalcs, std::atomic<size_t>& ndistlsh);
 
     void hash();
     void hash(Dat* pdata, const int R, const int C);

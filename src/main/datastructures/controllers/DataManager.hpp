@@ -12,6 +12,7 @@
 //#include <lshbox.h>
 #include "../../globals.hpp"
 #include "../rm/M.hpp"
+#include "../indexes/controllers/Pivot.hpp"
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/vector.hpp>
 
@@ -23,11 +24,13 @@ class DataManager {
     void serialize(Archive &ar, const unsigned int version) {
         ar & m;
         ar & idxs;
+        ar & deleteData;
     }
     bool deleteData;
 public:
     rm::M<Dat> m;
     std::vector<size_t> idxs;
+
 public:
     ~DataManager();
 
@@ -59,7 +62,7 @@ public:
 
     void print_rowp() const;
 
-    void sort(Dat *pivot);
+    void sort(Pivot& pivot);
 public:
 
     Dat* loadData(std::string filename);

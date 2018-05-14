@@ -133,6 +133,7 @@ struct HIQueryResults{
         ar & _npointsInInternal;
         ar & _npointsInLSH;
         ar & _distcalcs;
+        ar & k;
         if (Archive::is_loading::value) {
             nnodes = _nnodes;
             nlsh = _nlsh;
@@ -157,11 +158,15 @@ struct HIQueryResults{
     std::atomic<size_t> npoints{0};
     std::atomic<size_t> npointsInLSH{0};
     std::atomic<size_t> distcalcs{0};
+    int k = 3;
     lshbox::Topk topk;
     bool genned = false;
 
     void reset(int k){
+        this->k = k;
+        mtx.lock();
         topk.reset(k);
+        mtx.unlock();
     }
     std::vector<std::pair<float, size_t> > getTopK(){
         if (!genned){
@@ -172,7 +177,9 @@ struct HIQueryResults{
     }
 
     void add(size_t idx, float dist){
+        mtx.lock();
         topk.push(idx, dist);
+        mtx.unlock();
     }
 
     void add(std::pair<float, size_t>& pair) {
@@ -180,6 +187,14 @@ struct HIQueryResults{
         topk.push(pair);
         mtx.unlock();
     }
+
+    dist_type getMax(){
+        mtx.lock();
+        dist_type v = topk.getMax();
+        mtx.unlock();
+        return v;
+    }
+
 
     void addAll(lshbox::Topk& _topk, std::vector<size_t>& idxs) {
         mtx.lock();
@@ -193,6 +208,10 @@ struct HIQueryResults{
             topk.push(i);
         }
         mtx.unlock();
+    }
+
+    float max() {
+        return topk.getMax();
     }
 };
 

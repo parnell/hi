@@ -29,12 +29,13 @@ class M {
     size_t N;
 
     T *dims;
-    bool isTransferred;
+    bool deleteData;
 
     template<class Archive>
     void serialize(Archive &ar, const unsigned int version) {
         ar & dim;
         ar & N;
+        ar & deleteData;
         if (Archive::is_loading::value) {
             dims = new T[dim*N];
         }
@@ -51,20 +52,20 @@ public:
     void reset(size_t _dim, size_t _N) {
         dim = _dim;
         N = _N;
-        if (dims != NULL && !isTransferred) {
+        if (dims != NULL && deleteData) {
             delete[] dims;
         }
         dims = new T[dim * N];
     }
 
-    M() : dim(0), N(0), dims(NULL), isTransferred(false) {}
+    M() : dim(0), N(0), dims(NULL), deleteData(true) {}
 
-    M(size_t _dim, size_t _N) : dims(NULL), isTransferred(false) {
+    M(size_t _dim, size_t _N) : dims(NULL), deleteData(true) {
         reset(_dim, _N);
     }
 
     ~M() {
-        if (dims != NULL && !isTransferred) {
+        if (dims != NULL && deleteData) {
             delete[] dims;
         }
     }
@@ -146,8 +147,8 @@ public:
  * @param _N     Number of vectors
  * @param _dim   Dimension of each vector
  */
-    void transfer(T *source, size_t _N, size_t _dim) {
-        isTransferred = true;
+    void transfer(T *source, size_t _N, size_t _dim, bool deleteData) {
+        this->deleteData = deleteData;
         dims = source;
         dim = _dim;
         N = _N;
@@ -195,6 +196,7 @@ public:
 
     inline static float dist(const std::vector<Dat> vec1, const Dat *vec2, const size_t C)
     {
+        assert(vec1.size() == C);
         float dist_ = 0.0;
         for (unsigned i = 0; i != C; ++i)
         {

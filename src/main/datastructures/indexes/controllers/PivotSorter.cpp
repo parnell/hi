@@ -6,47 +6,54 @@
 #include <utility>    // std::swap
 
 PivotSorter::PivotSorter(Dat* pdata, const size_t R, const size_t C):
-        pdata(pdata), C(C), R(R), distances(R) {
+        pdata(pdata), C(C), R(R) {
 }
 
-void PivotSorter::reorder(Dat* pdata, std::vector<std::tuple<size_t, dist_type, size_t >>& idxdist, size_t R, size_t C)
+void PivotSorter::reorder(Dat* pdata, std::vector<Tup>& tups, size_t R, size_t C)
 {
     for (size_t i=0; i<R; ++i) {
-        while (std::get<0>(idxdist[i]) != i) {
+        while (tups[i].sort_index != i) {
             std::swap_ranges(
-                    &pdata[std::get<0>(idxdist[i])*C],
-                    &pdata[std::get<0>(idxdist[i])*C+C],
-                    &pdata[std::get<0>(idxdist[std::get<0>(idxdist[i])])*C]
+                    &pdata[tups[i].sort_index*C],
+                    &pdata[tups[i].sort_index*C+C],
+                    &pdata[tups[tups[i].sort_index].sort_index*C]
+//                    &pdata[std::get<0>(idxdist[std::get<0>(idxdist[i])])*C]
             );
-            std::swap(std::get<0>(idxdist[i]), std::get<0>(idxdist[std::get<0>(idxdist[i])]));
+            std::swap(tups[i].sort_index, tups[tups[i].sort_index].sort_index);
         }
     }
 }
 
-Stat PivotSorter::sort(std::vector<size_t>& idxs, Dat* _ppivot) {
-    Stat stat;
-    Dat pivot[C];
-    std::copy(&_ppivot[0],&_ppivot[C], &pivot[0]);
+void PivotSorter::sort(std::vector<size_t>& idxs, Pivot& pivot) {
+    auto& distances = pivot.distances;
+    if (pivot.pivot.size() != C){
+        dprintf(" wtf   %zu \n", pivot.pivot.size());
+    }
+    assert(pivot.pivot.size() == C);
     /// Calculate distance to the pivot for all points
     for (size_t i = 0; i < R; ++i) {
         Dat dist_ = 0;
         for (unsigned j = 0; j != C; ++j) {
-            dist_ += sqr(pivot[j] - pdata[i*C+j]);
+            dist_ += sqr(pivot.pivot[j] - pdata[i*C+j]);
         }
         const float d = std::sqrt(dist_);
-        distances[i] = std::make_tuple(i, d, idxs[i]);
+        distances[i] = Tup(idxs[i], d, i);
     }
 
     std::sort(std::begin(distances), std::end(distances), [](auto &left, auto &right) {
-        return std::get<1>(left) < std::get<1>(right);
+        return left.distance < right.distance;
     });
     /// copy over new index order
     for (size_t i=0; i<R; ++i){
-        idxs[i] = std::get<2>(distances[i]);
+        idxs[i] = distances[i].oindex;
     }
     /// copy new locations of Dat* array
     reorder(pdata, distances, R, C);
-    return stat;
+//    for (int k = 0; k < distances.size() ; ++k) {
+//        dprintf("%d   %zu   %f   %zu   %f\n", k, std::get<0>(distances[k]), std::get<1>(distances[k]),std::get<2>(distances[k]), pdata[k*C]) ;
+//    }
+
+//    return pr;
 }
 
 PivotSorter::~PivotSorter() {
@@ -94,7 +101,9 @@ TEST(utils, pivot_test)
     std::vector<std::pair<size_t, Dat >> distances(R);
     std::vector<size_t> idxs(R);
     std::iota(idxs.begin(), idxs.end(), 0);
-    ps.sort(idxs, &m[pidx*C]);
+    Pivot piv(ppivot, R, C);
+
+    ps.sort(idxs, piv);
     for (int i = 0; i < R; ++i) {
         EXPECT_EQ(9 - i, idxs[i]);
     }
@@ -108,7 +117,9 @@ TEST(utils, pivot_test)
     std::vector<size_t> idx2(R);
     std::iota(idx2.begin(), idx2.end(), 0);
 
-    ps2.sort(idx2, ppivot);
+    Pivot piv2(ppivot, R, C);
+
+    ps2.sort(idx2, piv2);
     EXPECT_EQ(idx2[0], pidx);
     EXPECT_EQ(idx2[R-1], R-1);
     EXPECT_EQ(m[0], ppivot[0]);
@@ -120,12 +131,14 @@ TEST(utils, pivot_test)
         std::iota(idx3.begin(), idx3.end(),idx_start  );
         auto m3 = testutil::makeM(R, C);
         PivotSorter ps3(m3, R, C);
-        ps3.sort(idx3, &m2[pid*C]);
+        Pivot piv3(&m2[pid*C], R, C);
+        ps3.sort(idx3, piv3);
         EXPECT_EQ(idx3[0]-idx_start , pid);
         for (int i = 0; i < R; ++i) {
 //            dprintf(" %d  %lu     %lu:%lu      \n",pid,  idx3[i], size_t(m3[i * C]), size_t(m3[i * C + 1]));
             EXPECT_EQ(size_t(m3[i*C]), idx3[i] - idx_start );
         }
+        delete[] m3;
     }
 }
 

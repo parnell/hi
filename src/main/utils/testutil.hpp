@@ -9,6 +9,7 @@ namespace testutil {
 
 
 Dat* makeM(const int R, const int C);
+Dat* makeMZC(const int R, const int C);
 
 };
 

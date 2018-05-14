@@ -6,12 +6,20 @@
 #include "../../controllers/DataManager.hpp"
 #include "../../../dtypes.hpp"
 #include "../../Stat.hpp"
+#include "Pivot.hpp"
 
 
 struct DecideResult{
     IndexGroup indexGroup;
-    std::pair<size_t,std::vector<Dat>>  idxpivot;
     std::vector<DataManager*> data;
+
+//    std::pair<size_t,std::vector<Dat>>  idxpivot;
+    Pivot* ppivot;
+    DecideResult() : ppivot(nullptr){}
+    DecideResult(Pivot* _pivot) : ppivot(_pivot){}
+    ~DecideResult(){
+        /** Pivot gets transferred over to HINode which is responsible for cleanup*/
+    }
 };
 
 
@@ -22,7 +30,7 @@ class IndexDecider {
     }
 
 public:
-    virtual std::vector<DecideResult> decide(DataManager *pdata, int maxPivots, float lshVarThreshold, int depth);
+    virtual std::vector<DecideResult*> decide(DataManager *pdata, int maxPivots, float lshVarThreshold, int depth);
     virtual Stat calculateVariance(DataManager *pdata);
 };
 

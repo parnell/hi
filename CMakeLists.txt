@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(COMPILE_TESTS 1)
+set(COMPILE_PROFILING 0)
+
 add_definitions(-DDEBUG_PRINT=1)
 add_definitions(-DDEBUG_LSH=0)
 add_definitions("-DCMAKE_CURRENT_BINARY_DIR=\"${CMAKE_CURRENT_BINARY_DIR}\"")
@@ -15,13 +17,21 @@ if (COMPILE_TESTS)
     include(GTest.cmake) ###### Google-Test
     add_definitions(-DCOMPILE_TESTS=1)
 endif(COMPILE_TESTS)
+if (COMPILE_PROFILING)
+    SET(GCC_COVERAGE_LINK_FLAGS "-Wl,-no_pie")
+    add_definitions(${GCC_COVERAGE_LINK_FLAGS})
+    add_definitions(-DCOMPILE_PROFILING=1)
+endif(COMPILE_PROFILING)
 
+include (CTest)
 
 include(MPI.cmake) ###### MPI
 
 include(Boost.cmake) ###### Boost
 
 include(PatchOpenMPApple.cmake) ###### MPI
+
+include(FindGperftools.cmake)
 
 #include(GSparseHash.cmake) ###### Googles Sparse Hash
 
@@ -78,10 +88,12 @@ set(SOURCE_FILES src/main/datastructures/rm/WorkItem.cpp
         src/main/datastructures/indexes/hi/HINode.cpp src/main/datastructures/indexes/hi/HINode.hpp src/main/utils/carray_iterator.cpp
         src/main/utils/carray_iterator.hpp src/main/datastructures/indexes/controllers/PivotSorter.cpp src/main/datastructures/indexes/controllers/PivotSorter.hpp
         src/main/utils/testutil.cpp src/main/utils/testutil.hpp src/main/datastructures/indexes/hi/indexwrappers/SpatialWrapper.cpp
-        src/main/datastructures/indexes/hi/indexwrappers/SpatialWrapper.hpp src/main/datastructures/indexes/hi/params.cpp src/main/datastructures/indexes/hi/params.hpp)
+        src/main/datastructures/indexes/hi/indexwrappers/SpatialWrapper.hpp src/main/datastructures/indexes/hi/params.cpp
+        src/main/datastructures/indexes/hi/params.hpp src/main/datastructures/indexes/controllers/Pivot.hpp src/main/datastructures/indexes/controllers/Pivot.cpp
+        )
 
 
-foreach(program ${PROGRAMS} ${TEST_PROGRAMS})
+foreach(program ${PROGRAMS} ${TEST_PROGRAMS} ${T3PROGRAMS})
     get_filename_component(progname ${program} NAME_WE)
     add_executable(${progname} ${SOURCE_FILES} ${program})
     if(APPLE)
@@ -100,6 +112,10 @@ foreach(program ${PROGRAMS} ${TEST_PROGRAMS})
     if (COMPILE_TESTS)
         target_link_libraries(${progname} PUBLIC gtest gtest_main)
     endif(COMPILE_TESTS)
+    if (COMPILE_PROFILING)
+        target_link_libraries(${progname} PUBLIC ${GPERFTOOLS_PROFILER})
+    endif(COMPILE_PROFILING)
+
 
 endforeach(program)
 
@@ -118,20 +134,6 @@ foreach(program ${T2PROGRAMS})
         target_link_libraries(${progname} PUBLIC OpenMP::OpenMP_CXX)
     endif()
         if (COMPILE_TESTS)
-        target_link_libraries(${progname} PUBLIC gtest gtest_main)
-    endif(COMPILE_TESTS)
-
-endforeach(program)
-
-foreach(program ${T3PROGRAMS})
-    get_filename_component(progname ${program} NAME_WE)
-    add_executable(${progname}  ${program})
-#    add_executable(${progname} ${SOURCE_FILES} ${program})
-
-    target_link_libraries(${progname} PUBLIC gtest gtest_main)
-    target_link_libraries(${progname} PUBLIC ${MPI_LIBRARIES})
-    target_link_libraries(${progname} PUBLIC ${Boost_LIBRARIES} )
-    if (COMPILE_TESTS)
         target_link_libraries(${progname} PUBLIC gtest gtest_main)
     endif(COMPILE_TESTS)
 

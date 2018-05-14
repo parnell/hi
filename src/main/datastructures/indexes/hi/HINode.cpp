@@ -9,6 +9,8 @@
 #include "indexwrappers/SpatialWrapper.hpp"
 #include "HITree.hpp"
 #include "../../rm/M.hpp"
+#include "../../../utils/vecutil.hpp"
+
 namespace hi {
 
 
@@ -43,21 +45,23 @@ void HINode::build(const HIBuildParams& params, DataManager *pdata, int depth) {
 
     auto results = parent->pdecider->decide(pdata, params.maxPivots, params.lshVarThreshold, depth);
 //    dcoutl("         post decide ");
-    for (auto dr : results){
-        const IndexGroup group = dr.indexGroup;
+    for (auto pdr : results){
+        const IndexGroup group = pdr->indexGroup;
 
         switch (group) {
             case IG_SPATIAL: {
 //                dprintf("   HI::Build --- SpatialWrapper  depth=%d  size=%lu\n", depth, pnewdat->getRows());
                 if (!ppivots){
-                    ppivots = new std::vector<std::pair<size_t, std::vector<Dat>>>();
+                    ppivots = new std::vector<Pivot*>();
                 }
-                ppivots->emplace_back(dr.idxpivot);
+//                ppivots->emplace_back(pdr->idxpivot);
+//                assert(pdr->idxpivot.second.size() > 0);
+                ppivots->emplace_back(pdr->ppivot);
                 br.npointsInInternal += 1;
                 br.nspatial += 1;
 
                 indexType = IT_KD;
-                for (auto pnewdat: dr.data){
+                for (auto pnewdat: pdr->data){
                     auto child = new HINode(parent);
                     if (!pchildren){
                         pchildren = new std::vector<HINode*>();
@@ -73,7 +77,7 @@ void HINode::build(const HIBuildParams& params, DataManager *pdata, int depth) {
                 br.nlsh += 1;
                 indexType = IT_LSH;
 //                dprintf("HI::Build --- LSH   size=%lu\n",pnewdat->getRows());
-                DataManager* pnewdat = dr.data[0];
+                DataManager* pnewdat = pdr->data[0];
                 plsh = new LSHWrapper(LSHTYPE::ITQ, R, C);
                 plsh->idxs = pnewdat->idxs;
                 br.npointsInLSH += pnewdat->getRows();
@@ -85,6 +89,7 @@ void HINode::build(const HIBuildParams& params, DataManager *pdata, int depth) {
                 break;
             }
         }
+        delete pdr;
     }
 
 }
@@ -92,6 +97,22 @@ void HINode::build(const HIBuildParams& params, DataManager *pdata, int depth) {
 HINode::~HINode() {
     if (plsh)
         delete plsh;
+    if (leafPoints)
+        delete leafPoints;
+    if (pspatial)
+        delete pspatial;
+    if (ppivots){
+        for (auto& i: *ppivots)
+            delete i;
+        delete ppivots;
+    }
+    if (pchildren){
+        for (auto& i: *pchildren)
+            delete i;
+        delete pchildren;
+    }
+
+
 }
 
 void HINode::knnquery(Dat* queryPoint, int depth) {
@@ -103,7 +124,7 @@ void HINode::knnquery(Dat* queryPoint, int depth) {
         return;
     }  else if (plsh){
 //        dprintf("lsh query %d %lu \n ", parent->queryParams.k, plsh->size());
-        auto scan = plsh->query(queryPoint, parent->queryParams.k);
+        auto scan = plsh->query(queryPoint, parent->queryParams.k, parent->queryResults.distcalcs, parent->queryResults.npointsInLSH);
 //        dcoutl("here 2");
 //        dprintf("   cnt=%d   heapSize=%lu idxsi=%lu \n", scan.cnt(), scan.topk().getTopk().size(), plsh->idxs.size());
 //        dcoutl("here 3");
@@ -111,19 +132,29 @@ void HINode::knnquery(Dat* queryPoint, int depth) {
 
 //        dcoutl("here 4");
     } else if (pchildren){
+        size_t i = 0;
+        auto& qr = parent->queryResults;
+        for (auto pivot : *ppivots){
+            ++qr.distcalcs;
+            ++qr.npointsInInternal;
+            const float dqp = rm::M<Dat>::dist(pivot->pivot, queryPoint,parent->queryParams.C);
+//            dprintf("  adding pivot %lu    %f ,       %f:%f\n", idxpivot.first, d, idxpivot.second[0], idxpivot.second[1]);
 
-        for (auto idxpivot : *ppivots){
-            ++parent->queryResults.distcalcs;
-            const float d = rm::M<Dat>::dist(idxpivot.second, queryPoint,parent->queryParams.C);
-            dprintf("  adding pivot %lu    %f ,       %f:%f\n", idxpivot.first, d, idxpivot.second[0], idxpivot.second[1]);
+            qr.add(pivot->index, dqp);
 
-            parent->queryResults.add(idxpivot.first, d);
+            /// d(q,p) - radius >= d(p,mid_l)
+            if ( dqp - qr.getMax() < (*ppivots)[0]->getMaxLeft()){
+                auto pleft = (*pchildren)[0];
+                pleft->knnquery(queryPoint, depth+1);
+            }
+            if ( dqp + qr.getMax() > (*ppivots)[0]->getMinRight()){
+                auto pright = (*pchildren)[1];
+                pright->knnquery(queryPoint, depth+1);
+            }
+            i++;
+
         }
-
 //        for (int i = 0; i < depth; ++i) { std::cout << "    "; } dprintf("child searching depth=%d   size=%lu\n", depth, pchildren->size());
-        for (auto pchild : *pchildren){
-            pchild->knnquery(queryPoint, depth+1);
-        }
 //        for (int i = 0; i < depth; ++i) { std::cout << "    "; }dprintf("--- depth=%d   size=%lu\n", depth, pchildren->size());
     }
 }
@@ -164,7 +195,8 @@ void HINode::searchLeaf(Dat* queryPoint, int depth) {
     HIQueryResults& qr = parent->queryResults;
 
     for (size_t i = 0; i < leafPoints->getRows(); ++i) {
-        ++parent->queryResults.distcalcs;
+        ++qr.npointsInLeaf;
+        ++qr.distcalcs;
         float d = rm::M<Dat>::dist((*leafPoints)[i], queryPoint, parent->queryParams.C);
 //        dprintf("  adding leaf %lu    %f ,       %f:%f\n", leafPoints->idxs[i], d, leafPoints->m[i][0], leafPoints->m[i][1]);
 
@@ -181,7 +213,7 @@ DataManager *HINode::getLeafPoints() const {
     return leafPoints;
 }
 
-std::vector<std::pair<size_t, std::vector<Dat> >> *HINode::getPivots() const {
+std::vector<Pivot*> *HINode::getPivots() const {
     return ppivots;
 }
 

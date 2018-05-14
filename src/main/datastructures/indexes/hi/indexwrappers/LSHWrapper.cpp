@@ -12,10 +12,10 @@
 
 class HITree;
 
-const unsigned int _M = 500; ///(521) Hash table size
+const unsigned int _M = 521; ///(521) Hash table size
 const unsigned int _L = 5; /// Number of hash tables
 const unsigned int _S = 100; /// Size of vectors in train
-const unsigned int _I = 5;/// Training iterations
+const unsigned int _I = 50;/// Training iterations
 const unsigned int _N = 4; /// Binary code bytes, (has to be less than D)
 
 const int _MIN_ROWS_LSH = 100;
@@ -74,8 +74,8 @@ void LSHWrapper::save(const string& filename){
     }
 }
 
-lsh_scanner LSHWrapper::query(Dat *point, const int k) {
-    auto am = lshbox::Metric<Dat>(D, L2_DIST );
+lsh_scanner LSHWrapper::query(Dat *point, const int k, std::atomic<size_t>& distcalcs, std::atomic<size_t>& ndistlsh ) {
+    auto am = lshbox::Metric<Dat>(D, L2_DIST, &distcalcs, &ndistlsh );
     lshbox::Matrix<Dat>::Accessor accessor(*pdata);
     lsh_scanner scanner(accessor,am,k);
     scanner.reset(point);
@@ -101,7 +101,7 @@ void LSHWrapper::query(lshbox::Benchmark& bench,
 void LSHWrapper::hash(Dat* pdata, const int R, const int C) {
     this->pdata = new lshbox::Matrix<Dat>();
     this->pdata->transfer(pdata, R, C); /// Careful, potentially doesn't like being part of a tree and transferring
-    lshbox::Matrix<Dat>::Accessor accessor(*this->pdata);
+//    lshbox::Matrix<Dat>::Accessor accessor(*this->pdata);
 
     hash();
 }
@@ -187,7 +187,7 @@ void LSHWrapper::setDefaultParams(const size_t R, const size_t C) {
     I = _I;
     N = C > _N ? _N : std::min(static_cast<unsigned int>(C), _N);
 
-    dprintf("%d %d %d %d %d N=%d \n", M, L, D, S, I, N);
+//    dprintf("%d %d %d %d %d N=%d \n", M, L, D, S, I, N);
 }
 
 
@@ -228,11 +228,12 @@ TEST(utils, LSHWrapper_matrix_serialization)
 
 TEST(hi, LSHWrapper_wrapper_serialization)
 {
-    const int R = 11;
-    const int C = 2;
+    const int R = 128;
+    const int C = 10;
     int k = 3;
     const auto r = static_cast<unsigned int>(R);
-    auto m = testutil::makeM(R, C);
+    auto m = testutil::makeMZC(R, C);
+
 ///LSHWrapper::LSHWrapper(LSHTYPE lshtype, int D, int M, int L, int S, int I) :
     LSHWrapper lsh(LSHTYPE::ITQ, R, C);
     lsh.hash(m, R, C);
@@ -250,15 +251,37 @@ TEST(hi, LSHWrapper_wrapper_serialization)
         ia >> lsh2;
     }
     EXPECT_EQ(lsh.D, lsh2.D);
+
+    auto omegas = lsh.itq.omegasAll;
+    auto omegas2 = lsh2.itq.omegasAll;
+    for (size_t i = 0; i <omegas.size(); ++i) {
+        for (size_t j = 0; j <omegas[i].size(); ++j) {
+            EXPECT_EQ(omegas[i][j], omegas2[i][j]);
+        }
+    }
+    auto pcsAll = lsh.itq.pcsAll;
+    auto pcsAll2 = lsh2.itq.pcsAll;
+    for (size_t i = 0; i <pcsAll.size(); ++i) {
+        for (size_t j = 0; j <pcsAll[i].size(); ++j) {
+            EXPECT_EQ(pcsAll[i][j], pcsAll2[i][j]);
+        }
+    }
+
     int pidx = 3;
-    auto scan1 = lsh.query(&m[pidx * C],k);
-    auto scan2 = lsh2.query(&m[pidx * C],k);
+    std::atomic<size_t> distcalcs{0};
+    std::atomic<size_t> distcalcs2{0};
+    std::atomic<size_t> distcalcslsh{0};
+    std::atomic<size_t> distcalcslsh2{0};
+    auto scan1 = lsh.query(&m[pidx * C],k, distcalcs,distcalcslsh);
+    auto scan2 = lsh2.query(&m[pidx * C],k, distcalcs2,distcalcslsh2);
     scan1.topk().genTopk();
     scan2.topk().genTopk();
     auto res1 = scan1.topk().getTopk();
     auto res2 = scan2.topk().getTopk();
     auto it1 = res1.begin();
     auto it2 = res2.begin();
+    EXPECT_EQ((size_t) distcalcs, (size_t) distcalcs2);
+//    dprintf("  # distcalcs =%zu   # distcalcs2=%zu\n", (size_t)distcalcs, (size_t)distcalcs2);
     for (; it1 != res1.end(); ++it1, ++it2 ){
 //        std::cout << it1->second << ": " << it1->first << "\t" <<
 //                  it2->second << ": " << it2->first <<std::endl;

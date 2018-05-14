@@ -4,8 +4,6 @@
 #include "../../utils/carray_iterator.hpp"
 #include "../indexes/controllers/PivotSorter.hpp"
 #include <algorithm>    // std::sort
-//#include <flann/flann.h>
-//#include <flann/io/hdf5.h>
 #include "../../dprint.hpp"
 #include <numeric>
 
@@ -14,7 +12,7 @@ DataManager::DataManager() : deleteData(true) {};
 DataManager::DataManager(Dat *pdata, size_t rows, size_t cols, bool shouldTransfer, bool deleteData, std::vector<size_t> idxs) :
         deleteData(deleteData), idxs(idxs) {
     if (shouldTransfer){
-        m.transfer(pdata, rows, cols);
+        m.transfer(pdata, rows, cols,deleteData);
     } else {
         m.load(pdata, rows, cols);
     }
@@ -23,7 +21,7 @@ DataManager::DataManager(Dat *pdata, size_t rows, size_t cols, bool shouldTransf
 DataManager::DataManager(Dat* pdata, size_t rows, size_t cols, bool shouldTransfer, bool deleteData, size_t startingIdx):
         deleteData(deleteData), idxs(rows){
     if (shouldTransfer){
-        m.transfer(pdata, rows, cols);
+        m.transfer(pdata, rows, cols, deleteData);
     } else {
         m.load(pdata, rows, cols);
     }
@@ -35,6 +33,7 @@ DataManager::~DataManager() {
     if (! deleteData){
         m.setData(nullptr); /// this will prevent the natural deletion of the data
     }
+
 }
 
 DataManager *DataManager::sliceData(size_t _begin, size_t _end) {
@@ -77,16 +76,7 @@ void DataManager::print() const {
     m.print();
 }
 
-
-struct MyComp {
-    MyComp(Dat* pivot, size_t C): pivot(pivot), C(C) { }
-    bool operator () (Dat* i, Dat* j) { return (i<j); }
-
-    Dat* pivot;
-    size_t C;
-};
-
-void DataManager::sort(Dat *pivot) {
+void DataManager::sort(Pivot& pivot) {
     PivotSorter sorter(m.getData(),m.getRows(),m.getCols());
     sorter.sort(idxs, pivot);
 }
