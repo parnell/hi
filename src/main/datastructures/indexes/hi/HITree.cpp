@@ -96,19 +96,19 @@ TEST(hi, HINode_test_serialization_leaf)
     tree.buildParams.maxLeafPoints = R*2;
     tree.buildParams.maxPivots = 1;
     tree.build();
-//    std::ofstream ofs("HINode_test_serialization_leaf.idx");
-//    {
-//        boost::archive::text_oarchive oa(ofs);
-//        oa << tree;
-//    }
-//    hi::HITree newtree;
-//    {
-//        std::ifstream ifs("HINode_test_serialization_leaf.idx");
-//        boost::archive::text_iarchive ia(ifs);
-//        ia >> newtree;
-//    }
-//    auto root = tree.getRoot();
-//    EXPECT_EQ(root->isLeaf(), true);
+    std::ofstream ofs("HINode_test_serialization_leaf.idx");
+    {
+        boost::archive::text_oarchive oa(ofs);
+        oa << tree;
+    }
+    hi::HITree newtree;
+    {
+        std::ifstream ifs("HINode_test_serialization_leaf.idx");
+        boost::archive::text_iarchive ia(ifs);
+        ia >> newtree;
+    }
+    auto root = tree.getRoot();
+    EXPECT_EQ(root->isLeaf(), true);
 }
 
 TEST(hi, HINode_test_serialization_save)
