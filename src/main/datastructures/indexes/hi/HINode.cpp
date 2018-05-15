@@ -190,7 +190,8 @@ void HINode::createLeaf(const HIBuildParams &params, DataManager *pManager, int 
     parent->buildResults.npointsInLeaf += pManager->getRows();
 
     is_leaf_ = true;
-    leafPoints = pManager;
+    leafPoints = new DataManager(
+            pManager->getDat(), pManager->getRows(), pManager->getCols(), true, false, pManager->idxs);
 }
 
 void HINode::searchLeaf(Dat* queryPoint, int depth) {
