@@ -86,6 +86,29 @@ HITree::~HITree() {
 #include <fstream>
 #include <limits>
 
+TEST(hi, HINode_test_serialization_leaf)
+{
+    const int R = 64;
+    const int C = 2;
+    hi::HITree tree(new DataManager(testutil::makeM(R, C), R, C, true, true, 0));
+    tree.buildParams.lshVarThreshold = std::numeric_limits<float>::infinity();;
+    tree.buildParams.maxLeafPoints = R*2;
+    tree.buildParams.maxPivots = 1;
+    tree.build();
+    std::ofstream ofs("HINode_test_serialization_leaf.idx");
+    {
+        boost::archive::text_oarchive oa(ofs);
+        oa << tree;
+    }
+    hi::HITree newtree;
+    {
+        std::ifstream ifs("HINode_test_serialization_leaf.idx");
+        boost::archive::text_iarchive ia(ifs);
+        ia >> newtree;
+    }
+    auto root = tree.getRoot();
+    EXPECT_EQ(root->isLeaf(), false);
+}
 
 TEST(hi, HINode_test_serialization_save)
 {
@@ -123,6 +146,7 @@ TEST(hi, HINode_test_serialization_save)
         boost::archive::text_oarchive oa(ofs);
         oa << tree;
     }
+
 }
 
 
