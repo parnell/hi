@@ -97,12 +97,12 @@ TEST(hi, HINode_test_serialization_leaf)
     tree.buildParams.maxPivots = 1;
     tree.build();
     std::string filename = sutil::sformat("%s/HINode_test_serialization_leaf.idx", CMAKE_CURRENT_BINARY_DIR);
-
-    std::ofstream ofs(filename);
     {
+        std::ofstream ofs(filename);
         boost::archive::text_oarchive oa(ofs);
         oa << tree;
     }
+
     hi::HITree newtree;
     {
         std::ifstream ifs(filename);
@@ -144,8 +144,8 @@ TEST(hi, HINode_test_serialization_save)
     EXPECT_TRUE(child1->getLeafPoints() != nullptr);
     EXPECT_EQ(child1->getLeafPoints()->getRows(), R/2);
     EXPECT_EQ(child2->getLeafPoints()->getRows(), R/2);
-    std::ofstream ofs("HINode_test_serialization.idx");
     {
+        std::ofstream ofs("HINode_test_serialization.idx");
         boost::archive::text_oarchive oa(ofs);
         oa << tree;
     }
@@ -210,8 +210,8 @@ TEST(hi, HINode_test_serialization)
     EXPECT_TRUE(child1->getLeafPoints() != nullptr);
     EXPECT_EQ(child1->getLeafPoints()->getRows(), R/2);
     EXPECT_EQ(child2->getLeafPoints()->getRows(), R/2);
-    std::ofstream ofs("HINode_test_serialization.idx");
     {
+        std::ofstream ofs("HINode_test_serialization.idx");
         boost::archive::text_oarchive oa(ofs);
         oa << tree;
     }
@@ -263,8 +263,8 @@ TEST(hi, HITree_test_build_query_LSH)
     tree.buildParams.lshVarThreshold = 0;
 
     tree.build();
-    std::ofstream ofs("lsh_test_build.idx");
     {
+        std::ofstream ofs("lsh_test_build.idx");
         boost::archive::text_oarchive oa(ofs);
         oa << tree;
     }
@@ -351,8 +351,8 @@ TEST(hi, HITree_test_build_query_spatial)
     lsh.build();
 
     EXPECT_EQ(tree.getRoot()->isLeaf(), false);
-    std::ofstream ofs("spatial_test_build.idx");
     {
+        std::ofstream ofs("spatial_test_build.idx");
         boost::archive::text_oarchive oa(ofs);
         oa << tree;
     }
