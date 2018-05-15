@@ -1,7 +1,6 @@
 
 #include "DataManager.hpp"
 #include "../../utils/vecutil.hpp"
-#include "../../utils/carray_iterator.hpp"
 #include "../indexes/controllers/PivotSorter.hpp"
 #include <algorithm>    // std::sort
 #include "../../dprint.hpp"
@@ -16,8 +15,16 @@ DataManager::DataManager(Dat *pdata, size_t rows, size_t cols, bool shouldTransf
     } else {
         m.load(pdata, rows, cols);
     }
-
 }
+DataManager::DataManager(rm::M<Dat>& m, size_t R, bool shouldTransfer): idxs(R), deleteData(true)  {
+    if (shouldTransfer){
+        this->m.transfer(m.getData(), m.getRows(), m.getCols(), true);
+    } else {
+        this->m.load(m.getData(), m.getRows(), m.getCols());
+    }
+    std::iota(idxs.begin(), idxs.end(), 0);
+}
+
 DataManager::DataManager(Dat* pdata, size_t rows, size_t cols, bool shouldTransfer, bool deleteData, size_t startingIdx):
         deleteData(deleteData), idxs(rows){
     if (shouldTransfer){
@@ -30,7 +37,7 @@ DataManager::DataManager(Dat* pdata, size_t rows, size_t cols, bool shouldTransf
 
 }
 DataManager::~DataManager() {
-    if (! deleteData){
+    if (!deleteData){
         m.setData(nullptr); /// this will prevent the natural deletion of the data
     }
 
@@ -42,9 +49,12 @@ DataManager *DataManager::sliceData(size_t _begin, size_t _end) {
                            std::vector<size_t>(idxs.begin()+_begin, idxs.begin()+_end));
 }
 
-Dat* DataManager::loadData(std::string filename){
+DataManager* DataManager::loadData(std::string filename){
+    rm::M<Dat> m;
     m.load(filename);
-    return m.getData();
+    auto pd = new DataManager(m, m.getRows(), true);
+    m.setData(nullptr); /// prevent deletion on exit as we transferred
+    return pd;
 }
 
 size_t DataManager::getRows() const {
@@ -104,6 +114,7 @@ std::ostream &operator<<(std::ostream &os, DataManager &dm) {
 }
 
 
+
 #if COMPILE_TESTS
 #include "gtest/gtest.h"
 #include "../../dprint.hpp"
@@ -114,9 +125,8 @@ TEST(controllers, DM_test_load)
 {
     std::string filename = sutil::sformat("%s/../data/tests/gaussian__d=14_s=10000_nclus=1_var=0.1.bin",
                                           CMAKE_CURRENT_BINARY_DIR);
-    DataManager mdat;
-    mdat.loadData(filename);
-    EXPECT_EQ(mdat.getRows(), 10000);
+    DataManager* pmdat = DataManager::loadData(filename);
+    EXPECT_EQ(pmdat->getRows(), 10000);
 }
 
 TEST(controllers, DM_construction_Memory)

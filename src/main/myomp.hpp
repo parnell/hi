@@ -2,7 +2,7 @@
 #ifndef HI_MYOMP_HPP
 #define HI_MYOMP_HPP
 
-#if defined(ENABLE_OPENMP)
+#ifdef ENABLE_OPENMP
 #include <omp.h>
 #else
 typedef int omp_int_t;

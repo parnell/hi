@@ -49,13 +49,15 @@ void HINode::build(const HIBuildParams& params, DataManager *pdata, int depth) {
         const IndexGroup group = pdr->indexGroup;
 
         switch (group) {
+            case IG_LEAF: {
+
+            }
+            break;
             case IG_SPATIAL: {
 //                dprintf("   HI::Build --- SpatialWrapper  depth=%d  size=%lu\n", depth, pnewdat->getRows());
                 if (!ppivots){
                     ppivots = new std::vector<Pivot*>();
                 }
-//                ppivots->emplace_back(pdr->idxpivot);
-//                assert(pdr->idxpivot.second.size() > 0);
                 ppivots->emplace_back(pdr->ppivot);
                 br.npointsInInternal += 1;
                 br.nspatial += 1;

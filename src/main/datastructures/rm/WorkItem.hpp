@@ -48,14 +48,14 @@ class WorkItem {
 
 protected:
     long id;
-    int jobid;
+    size_t jobid;
     int parentid;
     int nranks;
 
 public:
-    WorkItem(): id(nitems++), jobid(-1), parentid(0), nranks(world.size()){}
-    WorkItem(int jobid) : id(nitems++), jobid(jobid), parentid(0),nranks(world.size()) {}
-    WorkItem(int jobid, int parentid, int nranks) : id(nitems++), jobid(jobid), parentid(parentid), nranks(world.size()) {}
+    WorkItem(): id(nitems++), jobid(0), parentid(0), nranks(world.size()){}
+    WorkItem(size_t jobid) : id(nitems++), jobid(jobid), parentid(0),nranks(world.size()) {}
+    WorkItem(size_t jobid, int parentid, int nranks) : id(nitems++), jobid(jobid), parentid(parentid), nranks(world.size()) {}
 
     long getId() const;
 

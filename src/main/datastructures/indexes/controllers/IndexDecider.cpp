@@ -19,6 +19,8 @@ std::vector<DecideResult*> IndexDecider::decide(DataManager *pdata, int maxPivot
         auto pivots = vecutil::randRowPointers<Dat>(R, C, maxPivots, pdata->getDat());
         std::vector<DecideResult*> res(pivots.size());
         size_t idx = 0;
+        std::vector<DataManager*> cuts;
+        cuts.emplace_back(pdata);
         for (auto _pivot : pivots){
 //            std::cout << "Pre sort" << *pdata << std::endl;
             res[idx] = new DecideResult(new Pivot(_pivot, R, C));

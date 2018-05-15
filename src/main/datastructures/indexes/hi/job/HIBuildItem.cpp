@@ -18,13 +18,12 @@ namespace hi {
 //}
 
 std::list<WorkItem*> HIBuildItem::work() {
-    std::string filename = "/Users/i855892/data/rdata/vec/gaussian/gaussian__d=14_s=10000_nclus=1_var=0.1.hdf5";
+    std::string filename = "/Users/i855892/data/rdata/vec/gaussian/gaussian__d=14_s=10000_nclus=1_var=0.1.bin";
 //    std::string filename = "/Users/i855892/data/rdata/vec/gaussian/gaussian__d=50_s=1000000_nclus=1_var=0.1.hdf5";
-
-    dataManager.loadData(filename);
+    auto pdataManager = DataManager::loadData(filename);
     HI hi;
 
-    hi.build(&dataManager, nranks);
+    hi.build(pdataManager, nranks);
 //    lshbox::Matrix<Dat> data;
 //    data.load(dataset.ptr(), dataset.rows, dataset.cols);
 //    std::cout << "built!!!" << data.getSize() << " : " << data.getDim() << std::endl;

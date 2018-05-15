@@ -8,7 +8,7 @@ typedef float dtype;
 #define dtype_inf "%f"
 
 enum IndexGroup {
-    IG_SPATIAL, IG_LSH
+    IG_SPATIAL, IG_LSH, IG_LEAF
 };
 
 enum IndexType {

@@ -56,11 +56,11 @@ endif()
 
 include(LSHBox.cmake) ###### LSHBox
 
-set(PROGRAMS src/main/run_hi.cpp src/test/stack.cpp)
+set(PROGRAMS src/main/run_hi.cpp)
 
-set(T2PROGRAMS src/test/hi2.cpp)
+set(T2PROGRAMS src/test/mpi_test.cpp src/test/openmp_test.cpp)
 
-set(T3PROGRAMS src/test/hi3.cpp)
+set(T3PROGRAMS src/test/profile_test.cpp)
 
 set(SOURCE_FILES src/main/datastructures/rm/WorkItem.cpp
         src/main/datastructures/rm/WorkItem.hpp src/main/utils/vecutil.cpp src/main/debug.hpp src/main/datastructures/data.hpp
@@ -74,7 +74,7 @@ set(SOURCE_FILES src/main/datastructures/rm/WorkItem.cpp
         src/main/datastructures/indexes/hi/job/HIBuildItem.hpp src/main/datastructures/indexes/hi/job/QueryItem.cpp src/main/datastructures/indexes/hi/job/QueryItem.hpp
         src/main/datastructures/rm/Job.cpp src/main/datastructures/rm/Job.hpp src/main/datastructures/indexes/hi/job/HIJob.cpp
         src/main/datastructures/indexes/hi/job/HIJob.cpp src/main/datastructures/indexes/hi/job/HIJob.hpp src/main/datastructures/rm/JobHandler.cpp
-        src/main/datastructures/rm/JobHandler.hpp src/main/datastructures/min/MinJob.cpp src/main/datastructures/min/MinJob.hpp
+        src/main/datastructures/rm/JobHandler.hpp src/main/datastructures/min/TestJob.cpp src/main/datastructures/min/TestJob.hpp
         src/main/utils/Timer.cpp
         src/main/utils/Timer.hpp src/main/utils/stringutils.hpp src/main/myomp.hpp
         src/main/datastructures/indexes/hi/job/HIBuild.cpp src/main/datastructures/indexes/hi/job/HIBuild.hpp src/main/datastructures/rm/LoadBalancer.cpp
@@ -84,16 +84,16 @@ set(SOURCE_FILES src/main/datastructures/rm/WorkItem.cpp
         src/main/datastructures/indexes/controllers/IndexDecider.cpp src/main/datastructures/indexes/controllers/IndexDecider.hpp
         src/main/datastructures/indexes/controllers/Partitioner.cpp src/main/datastructures/indexes/controllers/Partitioner.hpp
         src/main/datastructures/indexes/hi/indexwrappers/LSHWrapper.cpp src/main/datastructures/indexes/hi/indexwrappers/LSHWrapper.hpp
-        src/test/stack.cpp src/main/datastructures/indexes/controllers/PivotSelector.cpp src/main/datastructures/indexes/controllers/PivotSelector.hpp
-        src/main/datastructures/indexes/hi/HINode.cpp src/main/datastructures/indexes/hi/HINode.hpp src/main/utils/carray_iterator.cpp
-        src/main/utils/carray_iterator.hpp src/main/datastructures/indexes/controllers/PivotSorter.cpp src/main/datastructures/indexes/controllers/PivotSorter.hpp
+        src/main/datastructures/indexes/controllers/PivotSelector.cpp src/main/datastructures/indexes/controllers/PivotSelector.hpp
+        src/main/datastructures/indexes/hi/HINode.cpp src/main/datastructures/indexes/hi/HINode.hpp
+        src/main/datastructures/indexes/controllers/PivotSorter.cpp src/main/datastructures/indexes/controllers/PivotSorter.hpp
         src/main/utils/testutil.cpp src/main/utils/testutil.hpp src/main/datastructures/indexes/hi/indexwrappers/SpatialWrapper.cpp
         src/main/datastructures/indexes/hi/indexwrappers/SpatialWrapper.hpp src/main/datastructures/indexes/hi/params.cpp
         src/main/datastructures/indexes/hi/params.hpp src/main/datastructures/indexes/controllers/Pivot.hpp src/main/datastructures/indexes/controllers/Pivot.cpp
         )
 
 
-foreach(program ${PROGRAMS} ${TEST_PROGRAMS} ${T3PROGRAMS})
+foreach(program ${PROGRAMS} ${TEST_PROGRAMS} ${T3PROGRAMS} ${T2PROGRAMS})
     get_filename_component(progname ${program} NAME_WE)
     add_executable(${progname} ${SOURCE_FILES} ${program})
     if(APPLE)
@@ -116,27 +116,7 @@ foreach(program ${PROGRAMS} ${TEST_PROGRAMS} ${T3PROGRAMS})
         target_link_libraries(${progname} PUBLIC ${GPERFTOOLS_PROFILER})
     endif(COMPILE_PROFILING)
 
-
 endforeach(program)
 
-foreach(program ${T2PROGRAMS})
-    get_filename_component(progname ${program} NAME_WE)
-    add_executable(${progname} ${SOURCE_FILES} ${program})
-    if(APPLE)
-        target_link_libraries(${progname} PUBLIC ${_hdf5_libs})
-    elseif(UNIX)
-#        target_link_libraries(${progname} PUBLIC ${FLANN_LIBRARIES})
-    endif()
-    target_link_libraries(${progname} PUBLIC ${MPI_LIBRARIES})
-    target_link_libraries(${progname} PUBLIC ${Boost_LIBRARIES} )
-    if(${OpenMP_FOUND})
-        target_link_libraries(${progname} PUBLIC ${OpenMP_CXX_LIBRARIES} ${PROJECT_LINK_LIBS})
-        target_link_libraries(${progname} PUBLIC OpenMP::OpenMP_CXX)
-    endif()
-        if (COMPILE_TESTS)
-        target_link_libraries(${progname} PUBLIC gtest gtest_main)
-    endif(COMPILE_TESTS)
-
-endforeach(program)
 
 

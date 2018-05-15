@@ -19,6 +19,7 @@
 
 
 class DataManager {
+
     friend class boost::serialization::access;
     template<class Archive>
     void serialize(Archive &ar, const unsigned int version) {
@@ -35,6 +36,7 @@ public:
     ~DataManager();
 
     DataManager();
+    DataManager(rm::M<Dat>& m,size_t R, bool shouldTransfer);
 
     DataManager(Dat* pdata, size_t rows, size_t cols, bool shouldTransfer, bool deleteData, std::vector<size_t>);
     DataManager(Dat* pdata, size_t rows, size_t cols, bool shouldTransfer, bool deleteData, size_t startingIdx);
@@ -65,7 +67,7 @@ public:
     void sort(Pivot& pivot);
 public:
 
-    Dat* loadData(std::string filename);
+    static DataManager* loadData(std::string filename);
 
 
     DataManager *sliceData(size_t _begin, size_t _end);

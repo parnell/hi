@@ -82,6 +82,7 @@ HITree::~HITree() {
 #include "gtest/gtest.h"
 #include "../../../dprint.hpp"
 #include "../../../utils/testutil.hpp"
+#include "../../../utils/stringutils.hpp"
 #include <fstream>
 #include <limits>
 
@@ -311,5 +312,15 @@ TEST(hi, HITree_test_build_query_spatial)
     tree.printQueryResults();
 }
 
+
+TEST(hi, HITree_test_load_from_file)
+{
+    std::string filename = sutil::sformat("%s/../data/tests/gaussian__d=14_s=10000_nclus=1_var=0.1.bin",
+                                          CMAKE_CURRENT_BINARY_DIR);
+    DataManager *pmdat = DataManager::loadData(filename);
+    EXPECT_EQ(pmdat->getRows(), 10000);
+    hi::HITree tree(pmdat);
+//    tree.build();
+}
 
 #endif

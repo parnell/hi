@@ -5,6 +5,7 @@
 //#include "../../dtypes.hpp"
 #include <vector>
 #include <numeric>
+
 #if __cplusplus >= 201701L
 #include <execution>
 #endif
@@ -12,7 +13,7 @@
 #include "../../utils/Timer.hpp"
 #include "../../myomp.hpp"
 
-class MinItem : public WorkItem {
+class TestWorkItem : public WorkItem {
     std::vector<int> v;
     friend class boost::serialization::access;
     template<class Archive>
@@ -24,9 +25,16 @@ class MinItem : public WorkItem {
     }
 
 public:
-    MinItem() = default;
+    TestWorkItem() = default;
     size_t mysize;
-    explicit MinItem(size_t size) : mysize(size){
+    explicit TestWorkItem(size_t size) : mysize(size){
+    }
+
+    int omp_thread_count() {
+        int n = 0;
+#pragma omp parallel reduction(+:n)
+        n += 1;
+        return n;
     }
 
     virtual std::list<WorkItem*> work() {
@@ -43,10 +51,11 @@ public:
             m+=item*item*item; // correct
         });
 #else
+
         #pragma omp parallel
         {
             int thread_id = omp_get_thread_num();
-            std::cout << "Thread number: " << omp_get_thread_num() << std::endl;
+            std::cout << "Thread number=" << omp_get_thread_num() <<  "\tmax=" << omp_get_max_threads()<< " " << omp_thread_count()<< std::endl;
         }
         #pragma omp parallel for
 //        for (auto& item : v) { // doesn't work with openmp
@@ -58,13 +67,15 @@ public:
         std::cout << "searched " << v.size() << "  " << mysize << "  " << m  << std::endl;
         return NO_WORK;
     };
+
+
 };
 
-class MinJob : public Job{
+class TestJob : public Job{
 public:
-    MinJob(size_t size, int splits){
+    TestJob(size_t size, int splits){
         for (size_t i = 0; i < splits; ++i) {
-            unfinished.push_back(new MinItem(size));
+            unfinished.push_back(new TestWorkItem(size));
         }
     }
 };

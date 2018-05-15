@@ -34,7 +34,7 @@ struct HIBuildParams{
     int nthreads = 1;
     int maxLeafPoints = 5;
     int minPivots = 1;
-    int maxPivots = 5;
+    int maxPivots = 1;
     int maxDepth = std::numeric_limits<int>::max();
     float lshVarThreshold = 0.9f;
     size_t maxIdx = -1;

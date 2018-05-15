@@ -35,10 +35,10 @@ class HINode {
     }
 
     HITree* parent;
+    bool is_leaf_;
     std::vector<Pivot*>* ppivots;
     std::vector<HINode*>* pchildren;
 
-    bool is_leaf_;
     DataManager* leafPoints;
     LSHWrapper* plsh;
     SpatialWrapper* pspatial;

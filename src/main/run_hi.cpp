@@ -19,7 +19,7 @@
 #include "globals.hpp"
 
 
-#include "datastructures/min/MinJob.hpp"
+#include "datastructures/min/TestJob.hpp"
 #include "utils/Timer.hpp"
 #include "utils/vecutil.hpp"
 #include "utils/stringutils.hpp"
@@ -31,7 +31,6 @@ namespace mpi = boost::mpi;
 
 BOOST_CLASS_EXPORT_GUID(WorkItem, "WorkItem");
 BOOST_CLASS_EXPORT_GUID(hi::HIBuildItem, "HIBuildItem");
-BOOST_CLASS_EXPORT_GUID(MinItem, "MinItem");
 BOOST_CLASS_EXPORT_GUID(ReturnResult, "ReturnResult");
 
 
@@ -99,7 +98,7 @@ int main(int argc, char** argv) {
 
     if (world.rank() == 0) {
         auto pj = new hi::HIJob();
-//        MinJob j(10000000, 4);
+//        TestJob j(10000000, 4);
 
         if (build && query) {
             auto bi = new hi::HIBuildItem(pj->id);

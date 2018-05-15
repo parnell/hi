@@ -25,7 +25,7 @@ class HIBuildItem : public WorkItem {
     std::vector<Dat> items;
 
     friend class boost::serialization::access;
-    DataManager dataManager;
+    DataManager* pdataManager;
 
     template<class Archive>
     void serialize(Archive &ar, const unsigned int version) {
@@ -37,7 +37,7 @@ class HIBuildItem : public WorkItem {
 public:
     HIBuildItem() : WorkItem() {}
 
-    explicit HIBuildItem(int jobid) : WorkItem(jobid) {}
+    explicit HIBuildItem(size_t jobid) : WorkItem(jobid) {}
 
 //    HIBuildItem(int jobid, std::vector<Dat> data) : WorkItem(jobid), items(std::move(data)) {}
 
