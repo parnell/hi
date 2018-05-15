@@ -86,6 +86,72 @@ HITree::~HITree() {
 #include <fstream>
 #include <limits>
 
+
+TEST(hi, HINode_test_serialization_save)
+{
+    const int R = 129;
+    const int C = 2;
+    auto m = testutil::makeM(R, C);
+    auto m2 = testutil::makeM(R, C);
+    size_t qidx = 3;
+    Dat* queryPoint = &m2[qidx*C];
+
+    int k = 3;
+
+    hi::HITree tree(new DataManager(m, R, C, true, true, 0));
+    tree.buildParams.maxDepth=2;
+    tree.buildParams.lshVarThreshold = std::numeric_limits<float>::infinity();;
+    tree.buildParams.maxLeafPoints = 75;
+    tree.buildParams.maxPivots = 1;
+    tree.build();
+    auto root = tree.getRoot();
+    EXPECT_EQ(root->isLeaf(), false);
+    EXPECT_EQ(root->getpChildren()->size(), 2);
+    EXPECT_TRUE(root->getPivots() != nullptr);
+    EXPECT_EQ(root->getPivots()->size(), 1);
+/// Should have built a tree with 64 points in each leaf. with 1 root split
+    auto child1 =(*root->getpChildren())[0];
+    auto child2 =(*root->getpChildren())[1];
+    EXPECT_EQ(child1->isLeaf(), true);
+    EXPECT_EQ(child2->isLeaf(), true);
+    EXPECT_TRUE(child1->getpChildren() == nullptr);
+    EXPECT_TRUE(child1->getLeafPoints() != nullptr);
+    EXPECT_EQ(child1->getLeafPoints()->getRows(), R/2);
+    EXPECT_EQ(child2->getLeafPoints()->getRows(), R/2);
+    std::ofstream ofs("HINode_test_serialization.idx");
+    {
+        boost::archive::text_oarchive oa(ofs);
+        oa << tree;
+    }
+}
+
+
+TEST(hi, HINode_test_serialization_load)
+{
+    const int R = 129;
+
+    hi::HITree newtree;
+    {
+        std::ifstream ifs("HINode_test_serialization.idx");
+        boost::archive::text_iarchive ia(ifs);
+        ia >> newtree;
+    }
+    auto root = newtree.getRoot();
+    EXPECT_EQ(root->isLeaf(), false);
+    EXPECT_TRUE(root->getPivots() != nullptr);
+    EXPECT_EQ(root->getPivots()->size(), 1);
+
+    auto child1 =(*newtree.getRoot()->getpChildren())[0];
+    auto child2 =(*newtree.getRoot()->getpChildren())[1];
+    EXPECT_EQ(child1->isLeaf(), true);
+    EXPECT_EQ(child2->isLeaf(), true);
+    EXPECT_TRUE(child1->getpChildren() == nullptr);
+    EXPECT_TRUE(child1->getLeafPoints() != nullptr);
+    EXPECT_EQ(child1->getLeafPoints()->getRows(), R/2);
+    EXPECT_EQ(child2->getLeafPoints()->getRows(), R/2);
+
+}
+
 TEST(hi, HINode_test_serialization)
 {
     const int R = 129;
