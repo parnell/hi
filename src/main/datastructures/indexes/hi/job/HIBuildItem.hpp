@@ -7,17 +7,7 @@
 #include "../../../rm/WorkItem.hpp"
 #include "HIBuild.hpp"
 #include "../../../controllers/DataManager.hpp"
-//#include "HI.hpp"
 #include <string>
-//#include <flann/flann.hpp>
-//#include <flann/io/hdf5.h>
-//#include <flann/util/matrix.h>
-//#include <lshbox/basis.h>
-//#include <lshbox/metric.h>
-//#include <lshbox/topk.h>
-//#include <lshbox/eval.h>
-//#include <lshbox/matrix.h>
-//#include <lshbox/indexwrappers/itqlsh.h>
 
 namespace hi {
 
@@ -31,13 +21,12 @@ class HIBuildItem : public WorkItem {
     void serialize(Archive &ar, const unsigned int version) {
         ar & boost::serialization::base_object<WorkItem>(*this);
         ar & items;
-//        ar & data;
+        ar & inputBinFile;
     }
-
+    std::string inputBinFile;
 public:
     HIBuildItem() : WorkItem() {}
-
-    explicit HIBuildItem(size_t jobid) : WorkItem(jobid) {}
+    HIBuildItem(std::string inputBinFile, size_t jobid) : WorkItem(jobid), inputBinFile(inputBinFile) {}
 
 //    HIBuildItem(int jobid, std::vector<Dat> data) : WorkItem(jobid), items(std::move(data)) {}
 

@@ -30,12 +30,12 @@ struct HIBuildParams{
         ar & maxIdx;
     }
 
-    int nnodes = 1;
-    int nthreads = 1;
-    int maxLeafPoints = 5;
-    int minPivots = 1;
-    int maxPivots = 1;
-    int maxDepth = std::numeric_limits<int>::max();
+    size_t nnodes = 1;
+    size_t nthreads = 1;
+    size_t maxLeafPoints = 5;
+    size_t minPivots = 1;
+    size_t maxPivots = 1;
+    size_t maxDepth = std::numeric_limits<size_t>::max();
     float lshVarThreshold = 0.9f;
     size_t maxIdx = -1;
 };
@@ -226,9 +226,9 @@ struct HIQueryParams{
         ar & C;
     }
 
-    int nnodes = 1;
-    int nthreads = 1;
-    int k = 3;
+    size_t nnodes = 1;
+    size_t nthreads = 1;
+    size_t k = 3;
     size_t C = 0;
     std::vector<Dat> _querypoint;
     Dat* querypoint = nullptr;

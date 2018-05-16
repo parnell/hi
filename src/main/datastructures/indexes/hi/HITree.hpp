@@ -23,12 +23,14 @@ class HITree {
     friend class boost::serialization::access;
     template<class Archive>
     void serialize(Archive &ar, const unsigned int version) {
+        ar & id;
         ar & proot;
         ar & buildParams;
         ar & queryParams;
         ar & buildResults;
         ar & queryResults;
         ar & pdata;
+
     }
 
     DataManager *pdata;
@@ -40,12 +42,13 @@ public:
     HIQueryResults queryResults;
     HIBuildParams buildParams;
     HIQueryParams queryParams;
+    int id;
     DataManager *getDataManager() const;
 
     void setDataManager(DataManager *pdata);
 
     HINode *getRoot() const;
-
+    size_t size() const;
     void setRoot(HINode *proot);
 
 public:
@@ -58,6 +61,7 @@ public:
 public:
     HITree();
     HITree(DataManager *pdata);
+    HITree(DataManager *pdata, int id);
     ~HITree();
 
     virtual void build(int depth = 0);

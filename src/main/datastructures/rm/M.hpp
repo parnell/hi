@@ -108,11 +108,36 @@ public:
      */
     void load(const std::string &path) {
         std::ifstream is(path.c_str(), std::ios::binary);
-        unsigned header[3];
-        assert(sizeof header == 3 * 4);
+
+        size_t header[3];
+        assert(sizeof header == 3 * sizeof(size_t));
         is.read((char *) header, sizeof(header));
         reset(header[2], header[1]);
+
         is.read((char *) dims, sizeof(T) * dim * N);
+        is.close();
+    }
+
+    /**
+    * Load the Matrix from a binary file.
+    */
+    void load(const std::string &path, size_t only, size_t nsplits) {
+        std::ifstream is(path.c_str(), std::ios::binary);
+        size_t tR;
+
+        size_t header[3];
+        assert(sizeof header == 3 * sizeof(size_t));
+        is.read((char *) header, sizeof(header));
+        tR = header[1];
+        assert(header[2] < 1000000);
+        reset(header[2], header[1]);
+        const size_t C = header[2];
+        reset(C, tR/nsplits + ( tR % nsplits > only ? 1 : 0) );
+
+        size_t cur = 0;
+        for (size_t i = only; i < tR; i+=nsplits, ++cur) {
+            is.read((char*)&dims[cur*dim], sizeof(T)*dim);
+        }
         is.close();
     }
 
@@ -168,8 +193,8 @@ public:
         os.close();
     }
 
-    M(const std::string &path) : dims(NULL) {
-        load(path);
+    M(const std::string &path, bool oldStyle) : dims(NULL) {
+        load(path, oldStyle);
     }
 
     M(const M &M) : dims(NULL) {

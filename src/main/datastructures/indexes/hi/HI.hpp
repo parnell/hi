@@ -8,6 +8,7 @@
 #include "../../Stat.hpp"
 #include "../controllers/IndexDecider.hpp"
 #include "../Index.hpp"
+#include <string>
 
 namespace hi {
 class HI  : public plib::Index {
@@ -23,11 +24,35 @@ class HI  : public plib::Index {
     IndexDecider* pdecider;
 
 public:
-    void build(DataManager *pdata, int nnodes, int max_depth=0);
-//    ~/src/LSHBOX/include/lshbox.h
     HI() : pdecider(nullptr){
         pdecider = new IndexDecider();
     }
+
+    void build(DataManager *pdata, size_t nnodes, int max_depth=0);
+    void build(const std::string& filename, size_t nnodes, int max_depth=0);
+
+    friend std::ostream &operator<<(std::ostream &os, HI &hi){
+        size_t sz = 0;
+        for (auto& ptree : hi.getTrees()){
+            sz += ptree->getDataManager()->getRows();
+        }
+        os << "[HI ntrees="<<hi.getTrees().size() << " ]\n";
+        for (auto& ptree : hi.getTrees()){
+            os << ptree->buildResults << std::endl;
+        }
+        for (auto& ptree : hi.getTrees()){
+            os << ptree->queryResults << std::endl;
+        }
+        return os;
+    }
+
+
+    std::vector<HITree*> getTrees() {
+        return trees_;
+    }
+
+
+    size_t size() const;
 
 
 };

@@ -57,6 +57,16 @@ DataManager* DataManager::loadData(std::string filename){
     return pd;
 }
 
+
+DataManager* DataManager::loadData(std::string filename, size_t only, size_t nsplits){
+    rm::M<Dat> m;
+    m.load(filename, only, nsplits);
+    auto pd = new DataManager(m, m.getRows(), true);
+    m.setData(nullptr); /// prevent deletion on exit as we transferred
+    return pd;
+}
+
+
 size_t DataManager::getRows() const {
     return m.getSize();
 }
@@ -121,9 +131,28 @@ std::ostream &operator<<(std::ostream &os, DataManager &dm) {
 #include "../../utils/testutil.hpp"
 #include "../../utils/stringutils.hpp"
 
+TEST(controllers, DM_test_save_load)
+{
+    std::string filename = sutil::sformat("%s/../data/tests/dm_test.bin",
+                                          CMAKE_CURRENT_BINARY_DIR);
+    const int R = 1024;
+    const int C = 18;
+    auto m = testutil::makeM(R, C);
+    {
+        DataManager pmdat(m, R, C, true, true,0);
+        pmdat.m.save(filename);
+    }
+    {
+        DataManager *pmdat = DataManager::loadData(filename);
+        EXPECT_EQ(pmdat->getRows(), R);
+        EXPECT_EQ(pmdat->getCols(), C);
+        delete pmdat;
+    }
+}
+
 TEST(controllers, DM_test_load)
 {
-    std::string filename = sutil::sformat("%s/../data/tests/gaussian__d=14_s=10000_nclus=1_var=0.1.bin",
+    std::string filename = sutil::sformat("%s/../data/tests/gaussian__d=20_s=10000_nclus=1_var=0.1.bin",
                                           CMAKE_CURRENT_BINARY_DIR);
     DataManager* pmdat = DataManager::loadData(filename);
     EXPECT_EQ(pmdat->getRows(), 10000);

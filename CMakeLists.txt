@@ -7,16 +7,26 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(COMPILE_TESTS 1)
 set(COMPILE_PROFILING 0)
+set(ALL_TESTS 0)
 
 add_definitions(-DDEBUG_PRINT=1)
 add_definitions(-DDEBUG_LSH=0)
 add_definitions("-DCMAKE_CURRENT_BINARY_DIR=\"${CMAKE_CURRENT_BINARY_DIR}\"")
+
 if (COMPILE_TESTS)
     set(TEST_PROGRAMS src/test/testall.cpp)
 
     include(GTest.cmake) ###### Google-Test
     add_definitions(-DCOMPILE_TESTS=1)
+
+    if (ALL_TESTS)
+        set(T2PROGRAMS src/test/mpi_test.cpp src/test/openmp_test.cpp)
+
+        set(T3PROGRAMS src/test/profile_test.cpp)
+    endif(ALL_TESTS)
+
 endif(COMPILE_TESTS)
+
 if (COMPILE_PROFILING)
     SET(GCC_COVERAGE_LINK_FLAGS "${GCC_COVERAGE_LINK_FLAGS} -Wl,-no_pie")
     add_definitions(${GCC_COVERAGE_LINK_FLAGS})
@@ -58,10 +68,6 @@ include(LSHBox.cmake) ###### LSHBox
 
 set(PROGRAMS src/main/run_hi.cpp)
 
-set(T2PROGRAMS src/test/mpi_test.cpp src/test/openmp_test.cpp)
-
-set(T3PROGRAMS src/test/profile_test.cpp)
-
 set(SOURCE_FILES src/main/datastructures/rm/WorkItem.cpp
         src/main/datastructures/rm/WorkItem.hpp src/main/utils/vecutil.cpp src/main/debug.hpp src/main/datastructures/data.hpp
         src/main/globals.hpp src/main/datastructures/datatypes/dna.cpp src/main/datastructures/datatypes/dna.hpp
@@ -90,7 +96,7 @@ set(SOURCE_FILES src/main/datastructures/rm/WorkItem.cpp
         src/main/utils/testutil.cpp src/main/utils/testutil.hpp src/main/datastructures/indexes/hi/indexwrappers/SpatialWrapper.cpp
         src/main/datastructures/indexes/hi/indexwrappers/SpatialWrapper.hpp src/main/datastructures/indexes/hi/params.cpp
         src/main/datastructures/indexes/hi/params.hpp src/main/datastructures/indexes/controllers/Pivot.hpp src/main/datastructures/indexes/controllers/Pivot.cpp
-        )
+        src/main/utils/fileutil.cpp src/main/utils/fileutil.hpp)
 
 
 foreach(program ${PROGRAMS} ${TEST_PROGRAMS} ${T3PROGRAMS} ${T2PROGRAMS})

@@ -4,12 +4,17 @@
 namespace hi {
 
 HITree::HITree() :
-        pdata(nullptr), pdecider(nullptr), proot(nullptr) {
+        pdata(nullptr), pdecider(nullptr), proot(nullptr), id(-1) {
 }
 
 
 HITree::HITree(DataManager *pdata) :
-        pdata(pdata), pdecider(new IndexDecider()), proot(nullptr) {
+        pdata(pdata), pdecider(new IndexDecider()), proot(nullptr), id(-1) {
+}
+
+HITree::HITree(DataManager *pdata, int id):
+        pdata(pdata), pdecider(new IndexDecider()), proot(nullptr), id(id){
+
 }
 
 
@@ -73,6 +78,10 @@ HITree::~HITree() {
         delete pdecider;
     if (proot)
         delete proot;
+}
+
+size_t HITree::size() const {
+    return pdata->getRows();
 }
 
 
@@ -176,7 +185,6 @@ TEST(hi, HINode_test_serialization_load)
     EXPECT_TRUE(child1->getLeafPoints() != nullptr);
     EXPECT_EQ(child1->getLeafPoints()->getRows(), R/2);
     EXPECT_EQ(child2->getLeafPoints()->getRows(), R/2);
-
 }
 
 TEST(hi, HINode_test_serialization)
@@ -408,7 +416,7 @@ TEST(hi, HITree_test_build_query_spatial)
 
 TEST(hi, HITree_test_load_from_file)
 {
-    std::string filename = sutil::sformat("%s/../data/tests/gaussian__d=14_s=10000_nclus=1_var=0.1.bin",
+    std::string filename = sutil::sformat("%s/../data/tests/gaussian__d=20_s=10000_nclus=1_var=0.1.bin",
                                           CMAKE_CURRENT_BINARY_DIR);
     DataManager *pmdat = DataManager::loadData(filename);
     EXPECT_EQ(pmdat->getRows(), 10000);

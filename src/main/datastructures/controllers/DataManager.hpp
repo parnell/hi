@@ -68,6 +68,7 @@ public:
 public:
 
     static DataManager* loadData(std::string filename);
+    static DataManager* loadData(std::string filename, size_t only, size_t nsplits);
 
 
     DataManager *sliceData(size_t _begin, size_t _end);

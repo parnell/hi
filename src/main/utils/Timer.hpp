@@ -7,7 +7,7 @@
 #include <string>
 #include <iostream>
 #include <ratio>
-#include <iomanip>
+#include <iomanip> /// for setprecision
 
 using namespace std::chrono;
 
@@ -17,40 +17,63 @@ class Timer {
     high_resolution_clock::time_point t_mark;
     std::string name;
     bool print;
-
-public:
-    explicit Timer(std::string name) : name(name) , print(true){
+    void _reset(){
         c_start = std::clock();
         t_start = std::chrono::high_resolution_clock::now();
         t_mark = t_start;
+    }
+public:
+    explicit Timer() : print(false){
+        _reset();
+    }
+    explicit Timer(std::string name) : name(name) , print(true){
+        _reset();
     }
     explicit Timer(std::string name, bool print) : name(name), print(print){
-        c_start = std::clock();
-        t_start = std::chrono::high_resolution_clock::now();
-        t_mark = t_start;
+        _reset();
     }
 
-    void fromStart(std::string optional="", std::string end="\n"){
-        if (!print){
-            return;
-        }
+    void printFromStart(std::string optional="", std::string end="\n"){
         std::clock_t c_end = std::clock();
         auto t_end = std::chrono::high_resolution_clock::now();
         std::cout << std::fixed << std::setprecision(2)
-                    << name << optional << "_walltime="
+                    << name << optional << "\twalltime="
                     << std::chrono::duration<double, std::milli>(t_end-t_start).count()
                     << " (ms)"
                     << "\t"
-                    << name << optional << "_cputime="
+                    << optional << "\tcputime="
                     << 1000.0 * (c_end-c_start) / CLOCKS_PER_SEC << " (ms)"
                     << end;
     }
+
+    /**
+     * Returns true if given time period has ellapsed since last (mark or start)
+     * @tparam _Rep
+     * @tparam _Period
+     * @param duration
+     * @param fromMark
+     * @return
+     */
     template <class _Rep, class _Period>
     bool ellapsed(const std::chrono::duration<_Rep, _Period>& duration, bool fromMark=true){
-        return (std::chrono::high_resolution_clock::now() - std::chrono::nanoseconds(duration) > t_mark);
+        if (fromMark){
+            return (std::chrono::high_resolution_clock::now() - std::chrono::nanoseconds(duration) > t_mark);
+        } else {
+            return (std::chrono::high_resolution_clock::now() - std::chrono::nanoseconds(duration) > t_start);
+        }
     }
+
+
+    /**
+     * Returns true and marks time if given time period has ellapsed since last mark
+     * @tparam _Rep
+     * @tparam _Period
+     * @param duration
+     * @param fromMark
+     * @return
+     */
     template <class _Rep, class _Period>
-    bool ellapsed_and_mark(const std::chrono::duration<_Rep, _Period>& duration, bool fromMark=true){
+    bool ellapsed_and_mark(const std::chrono::duration<_Rep, _Period>& duration){
         auto now = std::chrono::high_resolution_clock::now();
         if (now - std::chrono::nanoseconds(duration) > t_mark){
             t_mark = now;
@@ -58,11 +81,15 @@ public:
         }
         return false;
     }
+
     void mark(){
         t_mark = std::chrono::high_resolution_clock::now();
     }
+
     ~Timer(){
-        fromStart(std::string(""), std::string("\n"));
+        if (print){
+            printFromStart(std::string(""), std::string("\n"));
+        }
     }
 };
 
