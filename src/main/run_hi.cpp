@@ -132,17 +132,17 @@ int main(int argc, char** argv) {
     return __main(argc, argv);
 }
 #else
-
-int main(int _argc, char** _argv) {
-    auto ddir = sutil::sformat("%s/../data/tests", CMAKE_CURRENT_BINARY_DIR);
-    auto odir = sutil::sformat("%s/../../../../data/temp", CMAKE_CURRENT_BINARY_DIR);
-    std::string filename = sutil::sformat("%s/gaussian__d=14_s=10000_nclus=1_var=0.1.bin", ddir.c_str());
-    std::string idxname = sutil::sformat("%s/gaussian__d=14_s=10000_nclus=1_var=0.1.idx", odir.c_str());
-    std::vector<std::string> arguments = {"run_hi", "-b", filename, "-n", idxname};
-    std::vector<char*> argv;
-    for (const auto& arg : arguments)
-        argv.push_back((char*)arg.data());
-    argv.push_back(nullptr);
-    return __main(static_cast<int>(argv.size() - 1), argv.data());
-}
-#endif
+//
+//int main(int _argc, char** _argv) {
+//    auto ddir = sutil::sformat("%s/../data/tests", CMAKE_CURRENT_BINARY_DIR);
+//    auto odir = sutil::sformat("%s/../../../../data/temp", CMAKE_CURRENT_BINARY_DIR);
+//    std::string filename = sutil::sformat("%s/gaussian__d=14_s=10000_nclus=1_var=0.1.bin", ddir.c_str());
+//    std::string idxname = sutil::sformat("%s/gaussian__d=14_s=10000_nclus=1_var=0.1.idx", odir.c_str());
+//    std::vector<std::string> arguments = {"run_hi", "-b", filename, "-n", idxname};
+//    std::vector<char*> argv;
+//    for (const auto& arg : arguments)
+//        argv.push_back((char*)arg.data());
+//    argv.push_back(nullptr);
+//    return __main(static_cast<int>(argv.size() - 1), argv.data());
+//}
+//#endif

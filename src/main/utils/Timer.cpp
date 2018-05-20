@@ -15,7 +15,7 @@ TEST(utils, TimerTests)
     EXPECT_EQ(t.ellapsed(std::chrono::microseconds(1)), true);
     t.mark();
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    EXPECT_EQ(t.ellapsed(std::chrono::milliseconds(2)), false);
+    EXPECT_EQ(t.ellapsed(std::chrono::milliseconds(5)), false);
     t.mark();
     std::this_thread::sleep_for(std::chrono::milliseconds(2));
     EXPECT_EQ(t.ellapsed(std::chrono::milliseconds(2)), true);

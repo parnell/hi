@@ -49,19 +49,23 @@ public:
      * @param _dim Dimension of each vector
      * @param _N   Number of vectors
      */
-    void reset(size_t _dim, size_t _N) {
+    void reset(size_t _dim, size_t _N, bool zero=false) {
         dim = _dim;
         N = _N;
         if (dims != NULL && deleteData) {
             delete[] dims;
         }
-        dims = new T[dim * N];
+        if (zero){
+            dims = new T[dim * N]();
+        } else {
+            dims = new T[dim * N];
+        }
     }
 
     M() : dim(0), N(0), dims(NULL), deleteData(true) {}
 
-    M(size_t _dim, size_t _N) : dims(NULL), deleteData(true) {
-        reset(_dim, _N);
+    M(size_t _dim, size_t _N, bool zero=false) : dims(NULL), deleteData(true) {
+        reset(_dim, _N, zero);
     }
 
     ~M() {
@@ -193,8 +197,8 @@ public:
         os.close();
     }
 
-    M(const std::string &path, bool oldStyle) : dims(NULL) {
-        load(path, oldStyle);
+    M(const std::string &path) : dims(NULL) {
+        load(path);
     }
 
     M(const M &M) : dims(NULL) {
@@ -209,8 +213,9 @@ public:
         return *this;
     }
 
-    inline static float dist(const Dat *vec1, const Dat *vec2, const size_t C)
+    inline static dist_type dist(const T *vec1, const T *vec2, const size_t C)
     {
+//        return T::dist(vec1, vec2, C);
         float dist_ = 0.0;
         for (unsigned i = 0; i != C; ++i)
         {
@@ -219,8 +224,9 @@ public:
         return std::sqrt(dist_);
     }
 
-    inline static float dist(const std::vector<Dat> vec1, const Dat *vec2, const size_t C)
+    inline static dist_type dist(const std::vector<T>& vec1, const T *vec2, const size_t C)
     {
+//        return T::dist(vec1, vec2, C);
         assert(vec1.size() == C);
         float dist_ = 0.0;
         for (unsigned i = 0; i != C; ++i)
@@ -287,7 +293,7 @@ public:
      * dangerous. Only used if confident you know what you are doing
      * @param pdat
      */
-    void setData(Dat *pdat) {
+    void setData(T *pdat) {
         dims = pdat;
     }
 };

@@ -1,7 +1,17 @@
 cmake_minimum_required(VERSION 3.10)
 project(hi)
 
-message(" OS SYSTEM Apple=" ${APPLE} ", Unix=" ${UNIX})
+
+#define __VEC_TYPE__ 0
+#define __STRING_TYPE__ 1
+#define __GRAPH_TYPE__ 2
+
+### Set the Data Type to one of the above types if not passed in from command line
+### to pass in from command line Example: cmake .. -D__DATA_TYPE__=1
+if(NOT DEFINED __DATA_TYPE__)
+    set(__DATA_TYPE__ 1)
+endif()
+
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -12,6 +22,10 @@ set(ALL_TESTS 0)
 add_definitions(-DDEBUG_PRINT=1)
 add_definitions(-DDEBUG_LSH=0)
 add_definitions("-DCMAKE_CURRENT_BINARY_DIR=\"${CMAKE_CURRENT_BINARY_DIR}\"")
+add_definitions("-D__DATA_TYPE__=${__DATA_TYPE__}")
+
+message(" OS SYSTEM Apple=" ${APPLE} ", Unix=" ${UNIX} " DATA_TYPE=" ${__DATA_TYPE})
+
 
 if (COMPILE_TESTS)
     set(TEST_PROGRAMS src/test/testall.cpp)
@@ -88,15 +102,17 @@ set(SOURCE_FILES src/main/datastructures/rm/WorkItem.cpp
         src/main/datastructures/indexes/hi/HITree.cpp src/main/datastructures/indexes/hi/HITree.hpp src/main/utils/statutil.cpp src/main/utils/statutil.hpp
         src/main/datastructures/rm/M.cpp src/main/datastructures/rm/M.hpp src/main/datastructures/Stat.cpp src/main/datastructures/Stat.hpp
         src/main/datastructures/indexes/controllers/IndexDecider.cpp src/main/datastructures/indexes/controllers/IndexDecider.hpp
-        src/main/datastructures/indexes/controllers/Partitioner.cpp src/main/datastructures/indexes/controllers/Partitioner.hpp
         src/main/datastructures/indexes/hi/indexwrappers/LSHWrapper.cpp src/main/datastructures/indexes/hi/indexwrappers/LSHWrapper.hpp
         src/main/datastructures/indexes/controllers/PivotSelector.cpp src/main/datastructures/indexes/controllers/PivotSelector.hpp
         src/main/datastructures/indexes/hi/HINode.cpp src/main/datastructures/indexes/hi/HINode.hpp
         src/main/datastructures/indexes/controllers/PivotSorter.cpp src/main/datastructures/indexes/controllers/PivotSorter.hpp
-        src/main/utils/testutil.cpp src/main/utils/testutil.hpp src/main/datastructures/indexes/hi/indexwrappers/SpatialWrapper.cpp
-        src/main/datastructures/indexes/hi/indexwrappers/SpatialWrapper.hpp src/main/datastructures/indexes/hi/params.cpp
+        src/main/utils/testutil.cpp src/main/utils/testutil.hpp
+        src/main/datastructures/indexes/hi/params.cpp
         src/main/datastructures/indexes/hi/params.hpp src/main/datastructures/indexes/controllers/Pivot.hpp src/main/datastructures/indexes/controllers/Pivot.cpp
-        src/main/utils/fileutil.cpp src/main/utils/fileutil.hpp)
+        src/main/utils/fileutil.cpp src/main/utils/fileutil.hpp src/main/datastructures/controllers/EucDataManager.cpp src/main/datastructures/controllers/EucDataManager.hpp
+        src/main/datastructures/datatypes/EucBare.cpp src/main/datastructures/datatypes/EucBare.hpp src/main/config.hpp
+        src/main/datastructures/controllers/FDNADataManager.cpp src/main/datastructures/controllers/FDNADataManager.hpp
+        src/main/datastructures/controllers/MetricDataManager.cpp src/main/datastructures/controllers/MetricDataManager.hpp)
 
 
 foreach(program ${PROGRAMS} ${TEST_PROGRAMS} ${T3PROGRAMS} ${T2PROGRAMS})

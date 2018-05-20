@@ -222,23 +222,13 @@ struct HIQueryParams{
         ar & nnodes;
         ar & nthreads;
         ar & k;
-        ar & _querypoint;
-        ar & C;
+        ar & querypoint;
     }
 
     size_t nnodes = 1;
     size_t nthreads = 1;
     size_t k = 3;
-    size_t C = 0;
-    std::vector<Dat> _querypoint;
-    Dat* querypoint = nullptr;
-    void setQueryPoint(Dat* qp, int C){
-        querypoint= new Dat[C];
-        for (int i = 0; i < C; ++i) {
-            _querypoint.emplace_back(qp[i]);
-            querypoint[i] = qp[i];
-        }
-    }
+    Data* querypoint = nullptr;
 };
 
 };

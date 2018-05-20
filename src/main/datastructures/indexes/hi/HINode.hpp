@@ -9,15 +9,14 @@
 #include "indexwrappers/LSHWrapper.hpp"
 #include "../controllers/IndexDecider.hpp"
 #include "HITree.hpp"
-#include "indexwrappers/SpatialWrapper.hpp"
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/vector.hpp>
 #include "params.hpp"
+#include "../../controllers/EucDataManager.hpp"
 
 namespace hi {
 
 class HITree;
-class SpatialWrapper;
 
 class HINode {
     friend class boost::serialization::access;
@@ -27,7 +26,6 @@ class HINode {
         ar & is_leaf_;
         ar & indexType;
         ar & plsh;
-        ar & pspatial;
         ar & pchildren;
         ar & parent;
         ar & ppivots;
@@ -40,8 +38,7 @@ class HINode {
     std::vector<HINode*>* pchildren;
 
     DataManager* leafPoints;
-    LSHWrapper* plsh;
-    SpatialWrapper* pspatial;
+    LSHWrapper<itype>* plsh;
     IndexType indexType;
 
 public:
@@ -55,9 +52,9 @@ public:
 
 private:
 public:
-    LSHWrapper *getLSH() const;
+    LSHWrapper<itype> *getLSH() const;
 
-    void setLSH(LSHWrapper *plsh);
+    void setLSH(LSHWrapper<itype> *plsh);
 
 private:
 
@@ -66,18 +63,33 @@ public:
     HINode();
     HINode(HITree* parent);
     ~HINode();
-    void firstsplit(const HIBuildParams& params, DataManager* pdata);
+    void firstsplit(const HIBuildParams& params, DataManager* pdata){
+        build(params, pdata, 0);
+    }
 
     std::vector<HINode*>* getpChildren() const;
     DataManager* getLeafPoints() const;
 
+    HIBuildParams* getpBuildParms();
+    HIBuildResults* getpBuildResults();
+    std::vector<DecideResult*> decide(DataManager* pdata, const HIBuildParams& parms, int depth);
+
     void build(const HIBuildParams& params, DataManager *pdata, int depth);
+
     std::vector<Pivot*>* getPivots() const;
-    void knnquery(Dat* queryPoint, int depth);
+    void knnquery(Data* queryPoint, int depth);
 
-    void createLeaf(const HIBuildParams &params, DataManager *pManager, int depth);
 
-    void searchLeaf(Dat* queryPoint, int depth);
+    void createLeaf(const HIBuildParams &params, DataManager *pManager, int depth) {
+        auto pbr = getpBuildResults();
+        pbr->nleaf += 1;
+        pbr->npointsInLeaf += pManager->getRows();
+
+        is_leaf_ = true;
+        leafPoints = pManager->new_instance();
+    }
+
+    void searchLeaf(Data* queryPoint, int depth);
 
 };
 

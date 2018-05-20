@@ -6,15 +6,16 @@
 #include <sstream>
 
 #include "../../debug.hpp"
+BOOST_CLASS_EXPORT_IMPLEMENT(DNA)
 
 using std::string;
 
 // This is going to be memory-leaked, but there will only be one of them, so
 // it won't be a big deal.
-static dtype* dp_arr_ = 0;
+static dist_type* dp_arr_ = 0;
 static size_t dp_arr_size_ = 0;
 
-DNA::DNA(const string& sequence, const size_t& s) : Data(s) {
+DNA::DNA(const string& sequence, const size_t& s) : Data() {
     seq_ = new char[sequence.size()];
     seq_len_ = sequence.size();
     strncpy(seq_, sequence.c_str(), seq_len_);
@@ -26,7 +27,7 @@ DNA::~DNA() {
 
 string DNA::toString() const {
     std::stringstream str;
-    str << serial_number_ << ": " << seq_;
+    str << ": " << seq_;
     return str.str();
 }
 
@@ -37,7 +38,7 @@ inline unsigned int abs(unsigned int a, unsigned int b) {
     return a >= b ? a - b : b - a;
 }
 
-dtype DNA::d(const Data* other) const {
+float DNA::d(const Data* other) const {
 #ifdef DEBUG
     kNDIST_COMP++;
 #endif
@@ -48,8 +49,8 @@ dtype DNA::d(const Data* other) const {
 #endif
 }
 
-dtype DNA::hammingDist(const DNA* other) const {
-    dtype dist = 0;
+dist_type DNA::hammingDist(const DNA* other) const {
+    dist_type dist = 0;
 
     unsigned int min_size = seq_len_ < other->seq_len_ ? seq_len_ : other->seq_len_;
 
@@ -67,22 +68,22 @@ void DNA::ensureSize(const DNA* self, const DNA* other) {
     if (dp_arr_size_ < (self->size()+1) * (other->size()+1)) {
         if (dp_arr_)
             delete[] dp_arr_;
-        dp_arr_ = new dtype[(self->size()+1) + (other->size()+1)];
+        dp_arr_ = new dist_type[(self->size()+1) + (other->size()+1)];
         dp_arr_size_ = (self->size()+1) * (other->size()+1);
     }
 }
 
-inline dtype min(dtype a, dtype b) {
+inline dist_type min(dist_type a, dist_type b) {
     if (a < b) return a; return b;
 }
-inline dtype max(dtype a, dtype b) {
+inline dist_type max(dist_type a, dist_type b) {
     if (a > b) return a; return b;
 }
-inline dtype min3(dtype a, dtype b, dtype c) {
+inline dist_type min3(dist_type a, dist_type b, dist_type c) {
     return min(min(a,b),c);
 }
 
-dtype DNA::nwDist(const DNA* other) const {
+dist_type DNA::nwDist(const DNA* other) const {
     const DNA* dna = static_cast<const DNA*>(other);
 
     // dp_matrix:
@@ -92,7 +93,7 @@ dtype DNA::nwDist(const DNA* other) const {
     // l |_|_|_|
     // f |_|_|_|
 
-    dtype* dp_matrix = new dtype[(dna->seq_len_+1) * (seq_len_+1)];
+    dist_type* dp_matrix = new dist_type[(dna->seq_len_+1) * (seq_len_+1)];
     size_t width = dna->seq_len_+1;
 
     for (size_t i=0; i<seq_len_+1; ++i) {
@@ -102,7 +103,7 @@ dtype DNA::nwDist(const DNA* other) const {
             } else if (j == 0) {
                 dp_matrix[i*width + j] = i*kGap;
             } else {
-                dtype same_val = seq_[i-1] == dna->seq_[j-1] ? 0 : kMismatch;
+                dist_type same_val = seq_[i-1] == dna->seq_[j-1] ? 0 : kMismatch;
                 dp_matrix[i*width + j] =
                         min3(dp_matrix[(i-1)*width + j] + kGap,
                              dp_matrix[i*width + (j-1)] + kGap,
@@ -120,7 +121,7 @@ dtype DNA::nwDist(const DNA* other) const {
     }
     */
 
-    dtype answer = dp_matrix[(seq_len_+1) * (dna->seq_len_+1) - 1];
+    dist_type answer = dp_matrix[(seq_len_+1) * (dna->seq_len_+1) - 1];
     delete[] dp_matrix;
     return answer;
 }
@@ -135,16 +136,15 @@ size_t DNA::LoadData(const char* file, std::vector< Data* >* data_arr) {
     std::ifstream inf(file, std::ios::in);
 
     size_t i = 0;
-    while (getline(inf, name)) {
-        if (!name.empty() && name[0] == '>') {
-            // Skip the '>' at the beginning
-            getline(inf, seq);
-        } else {
-            seq = name;
+    while (getline(inf, seq)) {
+        if (!seq.empty() && seq[0] == '>') {
+            // Skip the '>' at the beginnings
+//            getline(inf, seq);
+            continue;
         }
 
         if (seq.empty())
-            return data_arr->size();
+            continue;
 
         toLower(seq);
         DNA* dna = new DNA(seq, i++);
@@ -155,3 +155,28 @@ size_t DNA::LoadData(const char* file, std::vector< Data* >* data_arr) {
     inf.close();
     return data_arr->size();
 }
+
+
+
+
+#if COMPILE_TESTS
+#include "gtest/gtest.h"
+#include "../../utils/Timer.hpp"
+#include "../../utils/stringutils.hpp"
+#include "../../loaders/loader.hpp"
+#include "../../dprint.hpp"
+#include <limits>
+
+TEST(data, string_dna_test_load)
+{
+    std::string filename = sutil::sformat("%s/../data/tests/1028.dna", CMAKE_CURRENT_BINARY_DIR);
+    {
+//        Timer("DNA Load Time");
+        std::vector<Data*> index;
+        Loader<DNA>::LoadData(filename.c_str(), &index);
+        EXPECT_EQ(1028, index.size());
+//        dcoutl(index.size());
+    }
+}
+
+#endif

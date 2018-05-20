@@ -8,7 +8,7 @@
 
 class PivotSelector {
 public:
-    Dat* findPivot(DataManager* pdata, std::vector<Dat*>* pivots);
+    Data* findPivot(DataManager* pdata, std::vector<Data*>* pivots);
 
 };
 

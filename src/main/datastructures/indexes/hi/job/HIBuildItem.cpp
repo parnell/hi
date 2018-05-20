@@ -2,6 +2,7 @@
 #include "HIBuildItem.hpp"
 #include "../HI.hpp"
 #include "../../../../utils/Timer.hpp"
+#include "../../../controllers/EucDataManager.hpp"
 //#include <lshbox.h>
 #include <lshbox/basis.h>
 #include <lshbox/metric.h>
@@ -20,7 +21,7 @@ namespace hi {
 
 std::list<WorkItem*> HIBuildItem::work() {
     std::cout << " Starting load binFile=" << inputBinFile << std::endl;
-    auto pdataManager = DataManager::loadData(inputBinFile, 0, 4);
+    auto pdataManager = EucDataManager<itype>::loadData(inputBinFile, 0, 4);
     std::cout <<" HIBuild loaded\tR=" << pdataManager->getRows() <<"\tC=" << pdataManager->getCols() << std::endl;
     HI hi;
     {

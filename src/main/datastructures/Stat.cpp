@@ -13,13 +13,3 @@ std::ostream& operator<< (std::ostream& os, const Stat& stat) {
     return os;
 }
 
-std::ostream& operator<< (std::ostream& os, const SingleStat& stat) {
-    os << "[Stat " << stat.count << ":" << stat.var << "]";
-    return os;
-}
-
-void SingleStat::add(float val) {
-    sum+=val;
-
-
-}

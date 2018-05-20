@@ -2,77 +2,64 @@
 #ifndef HI_DATAMANAGER_HPP
 #define HI_DATAMANAGER_HPP
 
-
-#include <string>
-#include <lshbox/basis.h>
-#include <lshbox/metric.h>
-#include <lshbox/topk.h>
-#include <lshbox/eval.h>
-#include <lshbox/matrix.h>
-//#include <lshbox.h>
-#include "../../globals.hpp"
-#include "../rm/M.hpp"
+#include <vector>
+#include <numeric>
 #include "../indexes/controllers/Pivot.hpp"
-#include <boost/serialization/serialization.hpp>
-#include <boost/serialization/vector.hpp>
-
-
+#include "../indexes/hi/params.hpp"
 
 class DataManager {
 
+public:
+    std::vector<size_t> idxs;
     friend class boost::serialization::access;
     template<class Archive>
     void serialize(Archive &ar, const unsigned int version) {
-        ar & m;
+        ar.template register_type< DataManager >();
         ar & idxs;
-        ar & deleteData;
-    }
-    bool deleteData;
-public:
-    rm::M<Dat> m;
-    std::vector<size_t> idxs;
-
-public:
-    ~DataManager();
-
-    DataManager();
-    DataManager(rm::M<Dat>& m,size_t R, bool shouldTransfer);
-
-    DataManager(Dat* pdata, size_t rows, size_t cols, bool shouldTransfer, bool deleteData, std::vector<size_t>);
-    DataManager(Dat* pdata, size_t rows, size_t cols, bool shouldTransfer, bool deleteData, size_t startingIdx);
-
-    friend std::ostream& operator<<(std::ostream& os, DataManager& dm);
-    Dat *getDat() const;
-
-    size_t getCols() const;
-
-    size_t getRows() const;
-
-    inline const Dat *operator[](size_t i) const {
-        return m[i];
-    }
-    inline  Dat *operator[](size_t i) {
-        return m[i];
+        ar & dmtype;
     }
 
-    lshbox::Matrix<Dat> getLSHMatrix();
+    enum ManagerType {
+        DM_EUC, DM_FDNA, UNKNOWN
+    };
 
-    inline Dat get(size_t r, size_t c);
-    inline Dat* getRow(size_t r) {return m[r];}
+    ManagerType dmtype = UNKNOWN;
 
-    void print() const;
+    DataManager() = default;
+    explicit DataManager(std::vector<size_t>& idxs): idxs(idxs) {}
+    explicit DataManager(size_t rows): idxs(rows) {
+        std::iota(idxs.begin(), idxs.end(), 0);
+    }
+    explicit DataManager(size_t rows, size_t startingIdx): idxs(rows) {
+        std::iota(idxs.begin(), idxs.end(), startingIdx);
+    }
+    virtual ~DataManager() = default;
+    ManagerType getType() const { return dmtype;}
+    virtual std::vector<Pivot*> pickPivots(int k) {return std::vector<Pivot*>();}
 
-    void print_rowp() const;
 
-    void sort(Pivot& pivot);
-public:
+    virtual void sort(Pivot& pivot) {};
 
-    static DataManager* loadData(std::string filename);
-    static DataManager* loadData(std::string filename, size_t only, size_t nsplits);
+    virtual size_t getRows() const {return 0;};
+
+    virtual DataManager *sliceData(size_t _begin, size_t _end) {return nullptr;}
+
+    virtual Stat calculateVariance() {return Stat();}
+
+    virtual Data *getElement(size_t row) {return nullptr;}
+
+    virtual DataManager *new_instance() {return nullptr;}
+
+//    virtual const Dat *operator[](size_t i) const {return nullptr;}
+//    virtual Dat *operator[](size_t i) {return nullptr;}
+
+    virtual void scan(Data *pData, int i, hi::HIQueryResults& results) {}
+
+    virtual bool isEuclidean() { return false; }
 
 
-    DataManager *sliceData(size_t _begin, size_t _end);
 };
+BOOST_CLASS_EXPORT_KEY(DataManager);
 
 
 #endif //HI_DATAMANAGER_HPP

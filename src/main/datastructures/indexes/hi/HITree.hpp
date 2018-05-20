@@ -12,6 +12,8 @@
 
 namespace hi {
 
+//class HINode<template float>;
+//class HINode<char>;
 class HINode;
 
 /**
@@ -43,29 +45,51 @@ public:
     HIBuildParams buildParams;
     HIQueryParams queryParams;
     int id;
-    DataManager *getDataManager() const;
 
+public:
+
+    HITree() :
+            pdata(nullptr), pdecider(nullptr), proot(nullptr), id(-1) {
+    }
+
+
+    explicit HITree(DataManager *pdata) :
+            pdata(pdata), pdecider(new IndexDecider()), proot(nullptr), id(-1) {
+    }
+
+    HITree(DataManager *pdata, int id):
+            pdata(pdata), pdecider(new IndexDecider()), proot(nullptr), id(id){
+
+    }
+    ~HITree();
+    IndexDecider *getDecider() const {
+        return pdecider;
+    }
+
+
+    DataManager *getDataManager() const {
+        return pdata;
+    }
+
+
+    void setDecider(IndexDecider *pdecider) {
+        if (pdecider)
+            delete pdecider;
+        this->pdecider = pdecider;
+    }
     void setDataManager(DataManager *pdata);
 
     HINode *getRoot() const;
     size_t size() const;
     void setRoot(HINode *proot);
 
-public:
-    IndexDecider *getDecider() const;
-
-    void setDecider(IndexDecider *pdecider);
-
     void printQueryResults() ;
 
 public:
-    HITree();
-    HITree(DataManager *pdata);
-    HITree(DataManager *pdata, int id);
-    ~HITree();
 
-    virtual void build(int depth = 0);
-    virtual void knnquery(Dat* queryPoint, int depth = 0);
+
+    virtual void build(int depth);
+    virtual void knnquery(Data* queryPoint, int depth);
 };
 
 

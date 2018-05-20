@@ -14,6 +14,7 @@ struct Tup{
 
     template<class Archive>
     void serialize(Archive &ar, const unsigned int version) {
+        ar.template register_type< Tup >();
         ar & oindex;
         ar & distance;
         ar & sort_index;
@@ -28,11 +29,19 @@ struct Tup{
 };
 
 struct Pivot{
+    Pivot(): ppivot(nullptr){};
+    Pivot(Data* _ppivot, size_t index, size_t R);
+
+    ~Pivot(){
+        if (ppivot)
+            delete ppivot;
+    }
     friend class boost::serialization::access;
 
     template<class Archive>
     void serialize(Archive &ar, const unsigned int version) {
-        ar & pivot;
+        ar.template register_type< Pivot >();
+        ar & ppivot;
         ar & distances;
         ar & index;
         ar & maxl_idx;
@@ -40,14 +49,13 @@ struct Pivot{
 //        ar & stat; /// Currently not saving stat information since it's usually good for building only
     }
 
-    std::vector<Dat> pivot;
+    Data* ppivot;
     std::vector<Tup> distances;
     Stat stat;
     size_t index;
     size_t maxl_idx; /// max_index of left
     size_t minr_idx; /// min_index of right
-    Pivot() = default;
-    Pivot(Dat* _ppivot, size_t R, size_t C);
+
     dist_type getMaxLeft() const;
     dist_type getMinRight() const;
 };

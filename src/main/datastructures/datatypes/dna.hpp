@@ -7,6 +7,7 @@
 #include <boost/serialization/array.hpp>
 
 #include "../data.hpp"
+#include "../../globals.hpp"
 
 //#define HAMMING_DIST
 #define NW_DIST
@@ -18,16 +19,18 @@ class DNA : public Data {
     friend class boost::serialization::access;
     template<class Archive>
     void serialize(Archive &ar, const unsigned int version) {
+        ar.template register_type< DNA >();
         ar & boost::serialization::base_object<Data>(*this);
+
         ar & seq_len_;
         if (Archive::is_loading::value) {
             seq_ = new char[seq_len_];
         }
         ar & boost::serialization::make_array(seq_,seq_len_);
-
     }
 
 public:
+    DNA() :Data(){};
     DNA(const std::string& sequence, const size_t& s);
     virtual ~DNA();
 
@@ -35,19 +38,27 @@ public:
 
     virtual size_t size() const { return seq_len_; }
 
-    virtual dtype d(const Data* other) const;
+    virtual float d(const Data* other) const;
 
     static size_t LoadData(const char* file, std::vector<Data*>* data_arr);
 
+    static dist_type dist(const DNA *v1, const DNA *v2, const size_t C){
+        return 0;
+    }
+
+    char* getSeq() const { return seq_;}
 protected:
     char* seq_;
     unsigned int seq_len_;
 
-    dtype hammingDist(const DNA* other) const;
-    dtype nwDist(const DNA* other) const;
+    dist_type hammingDist(const DNA* other) const;
+    dist_type nwDist(const DNA* other) const;
 
     void ensureSize(const DNA* self, const DNA* other);
 };
+
+
+BOOST_CLASS_EXPORT_KEY(DNA);
 
 
 

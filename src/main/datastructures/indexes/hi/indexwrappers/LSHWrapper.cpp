@@ -1,209 +1,123 @@
 
 #include "LSHWrapper.hpp"
-#include <lshbox/lsh/itqlsh.h>
-#include <lshbox/lsh/rbslsh.h>
-#include <lshbox/lsh/rhplsh.h>
-#include <lshbox/lsh/thlsh.h>
-#include <lshbox/lsh/psdlsh.h>
-#include <lshbox/lsh/shlsh.h>
-#include <lshbox/lsh/dbqlsh.h>
-#include <lshbox/lsh/kdbqlsh.h>
+//#include <lshbox/lsh/itqlsh.h>
+//#include <lshbox/lsh/rbslsh.h>
+//#include <lshbox/lsh/rhplsh.h>
+//#include <lshbox/lsh/thlsh.h>
+//#include <lshbox/lsh/psdlsh.h>
+//#include <lshbox/lsh/shlsh.h>
+//#include <lshbox/lsh/dbqlsh.h>
+//#include <lshbox/lsh/kdbqlsh.h>
 #include "../../../../dprint.hpp"
 
 class HITree;
 
-const unsigned int _M = 521; ///(521) Hash table size
-const unsigned int _L = 5; /// Number of hash tables
-const unsigned int _S = 100; /// Size of vectors in train
-const unsigned int _I = 50;/// Training iterations
-const unsigned int _N = 4; /// Binary code bytes, (has to be less than D)
 
-const int _MIN_ROWS_LSH = 100;
-
-
-LSHWrapper::LSHWrapper(LSHTYPE lshtype, int D, int M, int L, int S, int I, int N) :
-        M(M), L(L), D(D), S(S), I(I), N(N), lshtype(lshtype), pdata(nullptr){
-    assert (lshtype != RBS); /// not implemented
-    assert (lshtype != TH); /// not implemented
-    assert (lshtype != RHP); /// not implemented
-//    std::cout << "LSHWrapper\tD=" << D << "\tM=" << M << "\tL=" << L << "\tS=" << S << "\tI=" << I << "\tN="<<N<< std::endl;
+std::ostream& operator<< (std::ostream& os, LSHStat& stat) {
+    stat.print("", os);
+    return os;
 }
 
-/**
- * If used, must still set paramaters M,L,D,S,I,N
- * @param lshtype
- */
-LSHWrapper::LSHWrapper(LSHTYPE lshtype, const size_t R, const size_t C) :
-        M(0), L(0), D(0), S(0), I(0), N(0), lshtype(lshtype), pdata(nullptr){
-    assert (lshtype != RBS); /// not implemented
-    assert (lshtype != TH); /// not implemented
-    assert (lshtype != RHP); /// not implemented
-    setDefaultParams(R, C);
-//    std::cout << "LSHWrapper\tD=" << D << "\tM=" << M << "\tL=" << L << "\tS=" << S << "\tI=" << I << "\tN="<<N<< std::endl;
+std::ostream& LSHStat::print(const char* p, std::ostream &out){
+    std::string pr(p); pr+= "_p";
+    std::string r(p); r+= "_r";
+    std::string c(p); c+= "_c";
+    std::string ndist(p); ndist+= "_lsh";
+    std::string ncalcs(p); ncalcs+= "_calcs";
+    out << "[LSHStat\tsize=" << precision.count() << "\t";
+    unsigned print_flags = tstat<float>::ALL - tstat<float>::SUM - tstat<float>::COUNT - tstat<float>::VAR;
+//    precision.print(pr.c_str(),out, print_flags);
+//    out << "\t";
+    recall.print(r.c_str(),out, print_flags);
+    out <<"\t";
+    cost.print(c.c_str(),out, print_flags);
+    out << "]";
+    ndistlsh.print(ndist.c_str(),out, print_flags);
+    out <<"\t";
+    ndistcalcs.print(ncalcs.c_str(),out, print_flags);
+    out << "]";
+    return out;
 }
-
-LSHWrapper::~LSHWrapper() {
-//    if (pdata){
-//        delete pdata;
-//    }
-}
-
-
-
-void LSHWrapper::load(const string& filename){
-    switch(lshtype){
-        case ITQ: itq.load(filename);break;
-//            case KDBQ:kdbq.load(filename);break;
-//            case DBQ: dbq.load(filename);break;
-//            case PSD: psd.load(filename);break;
-////            case RBS: rbs.load(filename);break;
-//            case SH: sh.load(filename);break;
-        default: break;
-    }
-}
-
-void LSHWrapper::save(const string& filename){
-    switch(lshtype){
-        case ITQ: itq.save(filename); break;
-//            case KDBQ: kdbq.save(filename); break;
-//            case DBQ: dbq.save(filename);break;
-//            case PSD: psd.save(filename);break;
-////            case RBS: rbs.save(filename);break;
-//            case SH: sh.save(filename);break;
-        default: break;
-    }
-}
-
-lsh_scanner LSHWrapper::query(Dat *point, const int k, std::atomic<size_t>& distcalcs, std::atomic<size_t>& ndistlsh ) {
-    auto am = lshbox::Metric<Dat>(D, L2_DIST, &distcalcs, &ndistlsh );
-    lshbox::Matrix<Dat>::Accessor accessor(*pdata);
-    lsh_scanner scanner(accessor,am,k);
-    scanner.reset(point);
-    itq.query(point, scanner);
-    return scanner;
-}
-
-void LSHWrapper::query(lshbox::Benchmark& bench,
-           lshbox::Matrix<float>& data,
-           lshbox::Scanner<lshbox::Matrix<float>::Accessor>& scanner,
-           unsigned int index){
-    switch(lshtype){
-        case ITQ: itq.query(data[bench.getQuery(index)], scanner);break;
-//            case KDBQ: kdbq.query(data[bench.getQuery(index)], scanner);break;
-//            case DBQ: dbq.query(data[bench.getQuery(index)], scanner);break;
-//            case PSD: psd.query(data[bench.getQuery(index)], scanner);break;
-////            case RBS: rbs.query(data[bench.getQuery(index)], scanner);break;
-//            case SH: sh.query(data[bench.getQuery(index)], scanner);break;
-        default: break;
-    }
-}
-
-void LSHWrapper::hash(Dat* pdata, const int R, const int C) {
-    this->pdata = new lshbox::Matrix<Dat>();
-    this->pdata->transfer(pdata, R, C); /// Careful, potentially doesn't like being part of a tree and transferring
-//    lshbox::Matrix<Dat>::Accessor accessor(*this->pdata);
-
-    hash();
-}
-
-void LSHWrapper::hash(){
-    switch(lshtype) {
-        case ITQ:
-            assert (N > 0);
-            lshbox::itqLsh<Dat>::Parameter itqp;
-            itqp.M = M; ///(521) Hash table size
-            itqp.L = L; /// Number of hash tables
-            itqp.D = D;
-            itqp.N = N; /// Binary code bytes, (has to be less than D)
-            assert (itqp.N <= itqp.D);
-            itqp.S = S; /// Size of vectors in train
-            itqp.I = I; /// Training iterations
-
-            itq.reset(itqp);
-            itq.train(*pdata);
-            itq.hash(*pdata);
-            break;
-
-//            case KDBQ:
-//                lshbox::kdbqLsh<Dat>::Parameter kdbqp;
-//                kdbqp.M = M; ///(521) Hash table size
-//                kdbqp.L = L; /// Number of hash tables
-//                kdbqp.D = D;
-//                kdbqp.N = N; /// /// Number of projection dimensions,corresponding to 2*N binary code bytes for each vector
-//                kdbqp.I = I; /// Training iterations
-//                kdbq.reset(kdbqp);
-//                kdbq.train(data);
-////                kdbq.hash(data);// no hashing
-//                break;
-//            case DBQ:
-//                lshbox::dbqLsh<Dat>::Parameter dbqp;
-//                dbqp.M = M; ///(521) Hash table size
-//                dbqp.L = L; /// Number of hash tables
-//                dbqp.D = D;
-//                dbqp.N = N; /// /// Number of projection dimensions,corresponding to 2*N binary code bytes for each vector
-//                dbqp.I = I; /// Training iterations
-//                dbq.reset(dbqp);
-//                dbq.train(data);
-//                dbq.train(data);
-//                break;
-//            case PSD:
-//                lshbox::psdLsh<Dat>::Parameter psdp;
-//                psdp.M = M; ///(521) Hash table size
-//                psdp.L = L; /// Number of hash tables
-//                psdp.D = D;
-//                psdp.T = T; /// Index mode, you can choose 1(CAUCHY) or 2(GAUSSIAN)
-//                psdp.W = W; /// Window Size
-//                psd.reset(psdp);
-////                psd.train() /// no training
-//                psd.hash(data);
-//                break;
-//            case SH:
-//                lshbox::shLsh<Dat>::Parameter shp;
-//                shp.M = M; ///(521) Hash table size
-//                shp.L = L; /// Number of hash tables
-//                shp.D = D;
-//                shp.N = N; /// Binary code bytes
-//                shp.S = S; /// Size of vectors in train
-//                sh.reset(shp);
-//                sh.train(data);
-//                sh.hash(data);
-//                break;
-        default: break;
-    }
-}
-
-size_t LSHWrapper::size() const {
-    return pdata->getSize();
-}
-
-void LSHWrapper::setDefaultParams(const size_t R, const size_t C) {
-    const auto r = static_cast<unsigned int>(R);
-    assert(R > 2);
-    /** int D=2, int M=500, int L=5, int S = 100, int I = 5*/
-    M = R > _MIN_ROWS_LSH ? _M : std::max(static_cast<unsigned int>(2), r / 2);
-    L = _L;
-    D = static_cast<unsigned int>(C);
-    S = R > _MIN_ROWS_LSH ? _S : std::max(static_cast<unsigned int>(2), r / 2);
-    I = _I;
-    N = C > _N ? _N : std::min(static_cast<unsigned int>(C), _N);
-
-//    dprintf("%d %d %d %d %d N=%d \n", M, L, D, S, I, N);
-}
-
 
 #if COMPILE_TESTS
 #include "gtest/gtest.h"
 #include "../../../../utils/testutil.hpp"
+#include "../../../../utils/stringutils.hpp"
 #include "../../../../dprint.hpp"
+#include "../../../Stat.hpp"
+#include "../../../controllers/FDNADataManager.hpp"
 #include <fstream>
+#include <cstdlib>
+
+TEST(utils, LSHWrapper_bool_test)
+{
+    const int R = 101;
+    const int C = 100;
+    int Q = 10; /// benchmark size
+    auto m = new bool[R * C];
+    int k = 5;
+    srand(0); /// keep the same random seed
+    for (int r= 0; r< R; ++r){
+        for (int c = 0; c < C; ++c) {
+            m[r*C+c] = static_cast<bool>(rand() % 2); }
+    }
+
+    lshbox::Matrix<bool> mat;
+    mat.load(m, R, C);
+    lshbox::itqLsh<bool> itq;
+    lshbox::itqLsh<bool>::Parameter itqp;
+    itqp.M = _M; ///(521) Hash table size
+    itqp.L = _L; /// Number of hash tables
+    itqp.D = C;
+    itqp.N = _N; /// Binary code bytes, (has to be less than D)
+    assert (itqp.N <= itqp.D);
+    itqp.S = _S; /// Size of vectors in train
+    itqp.I = _I*2; /// Training iterations
+
+    itq.reset(itqp);
+    itq.train(mat);
+    itq.hash(mat);
+
+    std::ofstream ofs("LSHWrapper_bool_test.idx");
+    {
+        boost::archive::text_oarchive oa(ofs);
+        oa << itq;
+    }
+    {
+        lshbox::itqLsh<bool> itq2;
+        std::ifstream ifs("LSHWrapper_bool_test.idx");
+        boost::archive::text_iarchive ia(ifs);
+        ia >> itq2;
+    }
+    class tstat<float> sr("recall");
+    class tstat<float> sp("cost");
+    for (int i = 0; i < R; ++i) {
+        std::atomic<size_t> distcalcs{0};
+        std::atomic<size_t> ndistlsh{0};
+        auto am = lshbox::Metric<bool>(C, L2_DIST, &distcalcs, &ndistlsh);
+        lshbox::Matrix<bool>::Accessor accessor(mat);
+        lshbox::Scanner<lshbox::Matrix<bool>::Accessor> scanner(accessor, am, k);
+        bool *qp = &m[i * C];
+        scanner.reset(qp);
+        itq.query(qp, scanner); /// automatically does gentopk
+
+        auto &tk = scanner.topk().getTopk();
+        EXPECT_EQ(0, tk[0].first);
+    }
+
+    LSHStat stat;
+    /// check aginst scan for precision recall, just for visual verifying
+//    calculatePR(mat, itq, Q, k, stat);
+//    dcoutl(stat);
+}
 
 TEST(utils, LSHWrapper_matrix_serialization)
 {
     const int R = 101;
     const int C = 2;
-    auto m = testutil::makeM(R, C);
+    auto m = testutil::makeM<float>(R, C);
 
-    lshbox::Matrix<Dat> lsh;
+    lshbox::Matrix<float> lsh;
     lsh.load(m, R, C);
 
     std::ofstream ofs("lshw_test_build.idx");
@@ -211,7 +125,7 @@ TEST(utils, LSHWrapper_matrix_serialization)
         boost::archive::text_oarchive oa(ofs);
         oa << lsh;
     }
-    lshbox::Matrix<Dat> lsh2;
+    lshbox::Matrix<float> lsh2;
     {
         std::ifstream ifs("lshw_test_build.idx");
         boost::archive::text_iarchive ia(ifs);
@@ -231,11 +145,10 @@ TEST(hi, LSHWrapper_wrapper_serialization)
     const int R = 128;
     const int C = 10;
     int k = 3;
-    const auto r = static_cast<unsigned int>(R);
-    auto m = testutil::makeMZC(R, C);
+    auto m = testutil::makeMZC<float>(R, C);
 
 ///LSHWrapper::LSHWrapper(LSHTYPE lshtype, int D, int M, int L, int S, int I) :
-    LSHWrapper lsh(LSHTYPE::ITQ, R, C);
+    LSHWrapper<float> lsh(LSHTYPE::ITQ, R, C);
     lsh.hash(m, R, C);
     EXPECT_EQ(lsh.size(), R);
 
@@ -244,7 +157,7 @@ TEST(hi, LSHWrapper_wrapper_serialization)
         boost::archive::text_oarchive oa(ofs);
         oa << lsh;
     }
-    LSHWrapper lsh2;
+    LSHWrapper<float> lsh2;
     {
         std::ifstream ifs("lshw_wrapper_serialization.idx");
         boost::archive::text_iarchive ia(ifs);
@@ -288,6 +201,37 @@ TEST(hi, LSHWrapper_wrapper_serialization)
         EXPECT_EQ(it1->second, it2->second);
         EXPECT_EQ(it1->first, it2->first);
     }
+}
+
+TEST(hi, LSHWrapper_toeuc_test)
+{
+    int k = 3;
+    std::string filename = sutil::sformat("%s/../data/tests/1028.dna", CMAKE_CURRENT_BINARY_DIR);
+    FDNADataManager *pdat = FDNADataManager::loadData(filename, 0, 0);
+    EucDataManager<bool>* peuc = pdat->toEuclidean<bool>();
+    const size_t R = peuc->getRows();
+    const size_t C = peuc->getCols();
+    EXPECT_EQ(C, 5*4);
+    rm::M<bool>* pm = new rm::M<bool>();
+    pm->load(peuc->getDat(), R, C);
+//    dprintca(peuc->getDat(), R, C);
+
+    LSHWrapper<bool> lsh(LSHTYPE::ITQ, R, C);
+    std::atomic<size_t> distcalcs{0};
+    std::atomic<size_t> distcalcslsh{0};
+    for (size_t j = 0; j < 2; ++j) {
+        bool* qp = new bool[C];
+//        dprintca(qp, 1, C);
+        peuc->m.load(pm->getData(), R,C);
+        lsh.hash(peuc->getDat(), R, C);
+
+        std::copy(peuc->getDat(), peuc->getDat() + C, qp);
+        auto& tk = lsh.query(qp, k, distcalcs, distcalcslsh).topk().getTopk();
+        EXPECT_FLOAT_EQ(0, tk[0].first);
+    }
+
+//    dprintca(peuc->getDat(), R, C);
+
 }
 
 #endif
