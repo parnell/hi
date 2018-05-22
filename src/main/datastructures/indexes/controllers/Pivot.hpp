@@ -29,12 +29,14 @@ struct Tup{
 };
 
 struct Pivot{
-    Pivot(): ppivot(nullptr){};
+    Pivot();
     Pivot(Data* _ppivot, size_t index, size_t R);
 
     ~Pivot(){
         if (ppivot)
             delete ppivot;
+        if (pdistances)
+            delete pdistances;
     }
     friend class boost::serialization::access;
 
@@ -42,7 +44,7 @@ struct Pivot{
     void serialize(Archive &ar, const unsigned int version) {
         ar.template register_type< Pivot >();
         ar & ppivot;
-        ar & distances;
+        ar & pdistances;
         ar & index;
         ar & maxl_idx;
         ar & minr_idx;
@@ -50,7 +52,7 @@ struct Pivot{
     }
 
     Data* ppivot;
-    std::vector<Tup> distances;
+    std::vector<Tup>* pdistances;
     Stat stat;
     size_t index;
     size_t maxl_idx; /// max_index of left

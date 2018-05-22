@@ -2,20 +2,18 @@
 #include "Pivot.hpp"
 
 
-Pivot::Pivot(Data* _ppivot, size_t index, size_t R): ppivot(_ppivot), index(index), distances(R){
-//    distances(R)
-//        assert(!pivot.empty());
-//        assert(pivot.size() == C);
+Pivot::Pivot():  ppivot(nullptr), pdistances(new std::vector<Tup>()){};
+
+Pivot::Pivot(Data* _ppivot, size_t index, size_t R): ppivot(_ppivot), index(index), pdistances(new std::vector<Tup>(R)) {
+
 }
 
 dist_type Pivot::getMaxLeft() const {
-    return distances[maxl_idx].distance;
-//    return 0;
+    return (*pdistances)[maxl_idx].distance;
 }
 
 dist_type Pivot::getMinRight() const {
-    return distances[minr_idx].distance;
-//    return 0;
+    return (*pdistances)[minr_idx].distance;
 }
 
 
@@ -39,7 +37,8 @@ TEST(data, Pivot_test_serialization)
         boost::archive::text_iarchive ia(ifs);
         ia >> newpivot;
     }
-    EXPECT_EQ(newpivot.ppivot, pivot.ppivot);
+    EXPECT_TRUE(pivot.ppivot == nullptr);
+    EXPECT_TRUE(newpivot.ppivot == nullptr);
 }
 
 #endif

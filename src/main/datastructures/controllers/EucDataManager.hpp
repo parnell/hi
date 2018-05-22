@@ -117,12 +117,12 @@ public:
     }
 
     void sort(Pivot& pivot) override{
-        auto& distances = pivot.distances;
         const size_t R = getRows();
+        auto pdistances = pivot.pdistances;
+        assert(pdistances->size() == R);
+
         const size_t C = getCols();
-        if (pivot.ppivot->size() != C){
-            dprintf(" wtf   %zu \n", pivot.ppivot->size());
-        }
+
         assert(pivot.ppivot->size() == C);
         auto pivotdat = static_cast<Euc<T>*>(pivot.ppivot);
         auto mdat = m.getData();
@@ -134,18 +134,18 @@ public:
             }
             const float d = std::sqrt(dist_);
 //        dprintf(" -- %f   %zu   %zu\n", mdat[i*C], i, idxs[i]);
-            distances[i] = Tup(idxs[i], d, i);
+            (*pdistances)[i] = Tup(idxs[i], d, i);
         }
 
-        std::sort(std::begin(distances), std::end(distances), [](auto &left, auto &right) {
+        std::sort(std::begin(*pdistances ), std::end(*pdistances ), [](auto &left, auto &right) {
             return left.distance < right.distance;
         });
         /// copy over new index order
         for (size_t i=0; i<R; ++i){
-            idxs[i] = distances[i].oindex;
+            idxs[i] = (*pdistances)[i].oindex;
         }
         /// copy new locations of Dat* array
-        reorder(m.getData(), distances, R, C);
+        reorder(m.getData(), *pdistances, R, C);
     }
 
     void print_rowp() const {
