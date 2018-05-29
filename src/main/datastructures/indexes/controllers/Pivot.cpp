@@ -18,8 +18,6 @@ dist_type Pivot::getMinRight() const {
 
 
 
-
-
 #if COMPILE_TESTS
 #include "gtest/gtest.h"
 

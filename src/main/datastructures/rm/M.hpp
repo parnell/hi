@@ -215,10 +215,8 @@ public:
 
     inline static dist_type dist(const T *vec1, const T *vec2, const size_t C)
     {
-//        return T::dist(vec1, vec2, C);
         float dist_ = 0.0;
-        for (unsigned i = 0; i != C; ++i)
-        {
+        for (unsigned i = 0; i != C; ++i) {
             dist_ += sqr(vec1[i] - vec2[i]);
         }
         return std::sqrt(dist_);
@@ -226,11 +224,9 @@ public:
 
     inline static dist_type dist(const std::vector<T>& vec1, const T *vec2, const size_t C)
     {
-//        return T::dist(vec1, vec2, C);
         assert(vec1.size() == C);
         float dist_ = 0.0;
-        for (unsigned i = 0; i != C; ++i)
-        {
+        for (unsigned i = 0; i != C; ++i) {
             dist_ += sqr(vec1[i] - vec2[i]);
         }
         return std::sqrt(dist_);

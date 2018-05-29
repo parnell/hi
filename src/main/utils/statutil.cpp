@@ -16,7 +16,7 @@ TEST(utils, vartest1)
             m[r*C+c] = r*(c+1);
         }
     }
-    Stat stat = calculateVariance<int>(m, R, C);
+    Stat stat = calculateStats<int>(m, R, C);
     EXPECT_EQ(stat.count, R);
     EXPECT_EQ(stat.sum[0], 45);
     EXPECT_EQ(stat.sum[1], 90);

@@ -28,6 +28,7 @@ public:
         pdecider = new IndexDecider();
     }
 
+    void _build(DataManager *pdata, int max_depth=0);
     void build(DataManager *pdata, size_t nnodes, int max_depth=0);
     void build(const std::string& filename, size_t nnodes, int max_depth=0);
 

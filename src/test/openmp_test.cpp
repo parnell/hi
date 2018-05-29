@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
 #else
     std::cout << "##  OPENMP NOT FOUND ##= "<< std::endl;
 #endif
-    #pragma omp parallel
+    #pragma omp parallel for
     {
         std::cout << "Thread number=" << omp_get_thread_num() <<  "\tmax=" << omp_get_max_threads()<< " " << omp_thread_count()<< std::endl;
     }

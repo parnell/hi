@@ -23,7 +23,7 @@ typedef bool itype;
 #define dtype_inf "%f"
 
 enum IndexGroup {
-    IG_SPATIAL, IG_LSH, IG_LEAF
+    IG_SPATIAL, IG_LSH, IG_LEAF, IG_NONE
 };
 
 enum IndexType {

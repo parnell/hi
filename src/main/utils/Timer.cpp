@@ -12,17 +12,17 @@ TEST(utils, TimerTests)
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 //    std::cout << t.ellapsed(std::chrono::microseconds(1)) << std::endl;
 //    std::cout << t.ellapsed(std::chrono::milliseconds(1)) << std::endl;
-    EXPECT_EQ(t.ellapsed(std::chrono::microseconds(1)), true);
+    EXPECT_EQ(t.has_ellapsed(std::chrono::microseconds(1)), true);
     t.mark();
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    EXPECT_EQ(t.ellapsed(std::chrono::milliseconds(5)), false);
+    EXPECT_EQ(t.has_ellapsed(std::chrono::milliseconds(5)), false);
     t.mark();
     std::this_thread::sleep_for(std::chrono::milliseconds(2));
-    EXPECT_EQ(t.ellapsed(std::chrono::milliseconds(2)), true);
+    EXPECT_EQ(t.has_ellapsed(std::chrono::milliseconds(2)), true);
     t.mark();
-    EXPECT_EQ(t.ellapsed(std::chrono::seconds(1)), false);
+    EXPECT_EQ(t.has_ellapsed(std::chrono::seconds(1)), false);
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    EXPECT_EQ(t.ellapsed(std::chrono::seconds(1)), true);
+    EXPECT_EQ(t.has_ellapsed(std::chrono::seconds(1)), true);
 }
 
 #endif

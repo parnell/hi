@@ -60,6 +60,7 @@ struct Pivot{
 
     dist_type getMaxLeft() const;
     dist_type getMinRight() const;
+
 };
 
 

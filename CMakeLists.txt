@@ -9,7 +9,7 @@ project(hi)
 ### Set the Data Type to one of the above types if not passed in from command line
 ### to pass in from command line Example: cmake .. -D__DATA_TYPE__=1
 if(NOT DEFINED __DATA_TYPE__)
-    set(__DATA_TYPE__ 1)
+    set(__DATA_TYPE__ 0)
 endif()
 
 set(CMAKE_CXX_STANDARD 14)

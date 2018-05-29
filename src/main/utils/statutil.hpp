@@ -23,12 +23,11 @@ double variance(T* p, size_t len, bool isSample=true)
 
 
 template <typename T>
-Stat calculateVariance(T* points, const size_t size, const size_t D)
+Stat calculateStats(T *points, const size_t size, const size_t D)
 {
     Stat stat(size, D);
 
     /// i = 0, i_n = 1
-//    std::copy_n(m[0], m.getDim(), avg);
     for (size_t i = 0; i < D; ++i) {
         stat.mean[i] = points[i];
         stat.sum[i] += points[i];
@@ -43,7 +42,6 @@ Stat calculateVariance(T* points, const size_t size, const size_t D)
             stat.var[d] = delta * (points[1 * D + d] - stat.mean[d]);
         }
     } else {
-//        std::fill_n(var, D, 0.0f);
         for (size_t i = 0; i < D; ++i) {
             stat.var[i] = 0.0f; }
     }

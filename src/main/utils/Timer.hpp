@@ -55,13 +55,27 @@ public:
      * @return
      */
     template <class _Rep, class _Period>
-    bool ellapsed(const std::chrono::duration<_Rep, _Period>& duration, bool fromMark=true){
+    bool has_ellapsed(const std::chrono::duration<_Rep, _Period> &duration, bool fromMark = true){
         if (fromMark){
             return (std::chrono::high_resolution_clock::now() - std::chrono::nanoseconds(duration) > t_mark);
         } else {
             return (std::chrono::high_resolution_clock::now() - std::chrono::nanoseconds(duration) > t_start);
         }
     }
+
+    /**
+     * Returns time since period has mark or start
+     * @tparam _Rep
+     * @tparam _Period
+     * @param duration
+     * @param fromMark
+     * @return
+     */
+    std::chrono::duration<double, std::nano> ellapsed(bool fromMark = true){
+        return std::chrono::high_resolution_clock::now() -
+               (fromMark ? t_mark : t_start);
+    }
+
 
 
     /**
@@ -73,7 +87,7 @@ public:
      * @return
      */
     template <class _Rep, class _Period>
-    bool ellapsed_and_mark(const std::chrono::duration<_Rep, _Period>& duration){
+    bool has_ellapsed_and_mark(const std::chrono::duration<_Rep, _Period> &duration){
         auto now = std::chrono::high_resolution_clock::now();
         if (now - std::chrono::nanoseconds(duration) > t_mark){
             t_mark = now;

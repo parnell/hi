@@ -38,13 +38,14 @@ public:
     virtual std::vector<Pivot*> pickPivots(int k) {return std::vector<Pivot*>();}
 
 
-    virtual void sort(Pivot& pivot) {};
+    virtual void sort(Pivot& pivot, bool retainIdxs) {};
 
     virtual size_t getRows() const {return 0;};
 
     virtual DataManager *sliceData(size_t _begin, size_t _end) {return nullptr;}
 
-    virtual Stat calculateVariance() {return Stat();}
+    virtual Stat calculateStat() {return Stat();}
+    virtual tstat<dist_type> calculateStat(Pivot* ppivot) {return tstat<dist_type>();}
 
     virtual Data *getElement(size_t row) {return nullptr;}
 

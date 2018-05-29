@@ -21,6 +21,7 @@
 
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/export.hpp>
+#include <unordered_set>
 
 template<typename T>
 class EucDataManager : public DataManager {
@@ -116,10 +117,32 @@ public:
         }
     }
 
-    void sort(Pivot& pivot) override{
+    tstat<dist_type> stat(Euc<T>* ppivot){
         const size_t R = getRows();
+        const size_t C = getCols();
+        auto mdat = m.getData();
+        tstat<dist_type> stat;
+        #pragma omp parallel for
+        for (size_t i = 0; i < R; ++i) {
+            T dist_ = 0;
+            for (unsigned j = 0; j != C; ++j) {
+                dist_ += sqr( (*ppivot)[j] - mdat[i*C+j]);
+            }
+            const float d = std::sqrt(dist_);
+            stat.addStat(d);
+        }
+        return stat;
+    }
+
+    void sort(Pivot& pivot, bool retainIdxs) override{
+        const size_t R = getRows();
+        if (pivot.pdistances == nullptr){
+            pivot.pdistances = new std::vector<Tup>(R);
+        }
         auto pdistances = pivot.pdistances;
-        assert(pdistances->size() == R);
+        if (pdistances->size() != R){
+            pdistances->resize(R);
+        }
 
         const size_t C = getCols();
 
@@ -140,9 +163,11 @@ public:
         std::sort(std::begin(*pdistances ), std::end(*pdistances ), [](auto &left, auto &right) {
             return left.distance < right.distance;
         });
-        /// copy over new index order
-        for (size_t i=0; i<R; ++i){
-            idxs[i] = (*pdistances)[i].oindex;
+        if (retainIdxs){
+            /// copy over new index order
+            for (size_t i=0; i<R; ++i){
+                idxs[i] = (*pdistances)[i].oindex;
+            }
         }
         /// copy new locations of Dat* array
         reorder(m.getData(), *pdistances, R, C);
@@ -169,18 +194,99 @@ public:
         os << "]" << std::endl;
         return os;
     }
-    std::vector<Pivot *> pickPivots(int k) override {
-        std::vector<Pivot*> res(k);
-        auto r = vecutil::randRowPointers<T>(getRows(), getCols(), k, getDat());;
-//    auto r = vecutil::pickSet(getRows(), k, )
-        for (size_t i = 0; i < r.size(); ++i) {
-            Euc<T>* e = new Euc<T>(r[i], getCols());
-            res[i] = new Pivot(e
-                    , idxs[r[i]-getDat()],
-                               getRows());
+
+    std::vector<T*> getCandidateSet(){
+        const size_t R = m.getRows();
+        size_t n = R > PIV_MAX_CAND_SAMPLES ? PIV_MAX_CAND_SAMPLES : R;
+        return vecutil::fft<T, dist_type>(R, m.getCols(), n, getDat(), rm::M<T>::dist);
+    }
+
+    std::vector<T*>* getEvaluationSet(std::vector<T*>& exclude_ptrs ){
+        const size_t R = m.getRows();
+        const size_t C = m.getCols();
+        std::unordered_set<size_t> exclude;
+        std::vector<T*>* pchoose_vect = new std::vector<T*>();
+        #pragma omp parallel for
+        for (size_t k = 0; k < exclude_ptrs.size(); ++k) {
+            exclude.insert(size_t((exclude_ptrs[k] - m.getData())/C)); /// convert to index
         }
+        #pragma omp parallel for
+        for (size_t i = 0; i < R; ++i) {
+            if (exclude.find(i) != exclude.end()){
+                continue;}
+            pchoose_vect->emplace_back(&m.getData()[i*C]);
+        }
+        size_t nr = pchoose_vect->size();
+        size_t n = nr > PIV_MAX_EVAL_SAMPLES ? PIV_MAX_EVAL_SAMPLES : nr;
+        if (n == nr){
+            return pchoose_vect;
+        }
+        return vecutil::randRowPointers<T>(m.getCols(), n, *pchoose_vect);
+    }
+
+    tstat<dist_type> evaluate(Euc<T>* pivot, std::vector<T*>& eset, const size_t C ) {
+        EucDataManager<T> dm(eset[0], eset.size(), C, true, false, 0);
+
+        return dm.stat(pivot);
+    }
+
+    std::vector<Pivot *> pickPivots(int numPivots) override{
+        std::vector<Pivot*> res(numPivots);
+        if (numPivots == 0){
+            return res;
+        }
+
+        const size_t R = m.getRows();
+        const size_t C = m.getCols();
+        if (numPivots >= R){
+            auto pdat = m.getData();
+            for (size_t i = 0; i < R; ++i) {
+                auto pe = new Euc<T>(&pdat[i*C],C);
+                res.emplace_back(new Pivot(pe, 0, R));
+            }
+            return res;
+        }
+        auto cset = getCandidateSet();
+        std::vector<T*>* eset;
+        if (cset.size() < PIV_MAX_CAND_SAMPLES){ /// we ate all the points
+            const size_t ns = static_cast<size_t>(cset.size()/2);
+            eset = new std::vector<T*>(cset.size() - ns);
+            std::copy(cset.begin(), cset.begin() + ns, eset->begin());
+            cset.resize(ns);
+        } else {
+            eset = getEvaluationSet(cset);
+        }
+
+        if (numPivots >= cset.size()){
+            res.resize(cset.size());
+            for (size_t i = 0; i < cset.size(); ++i) {
+                res[i] = new Pivot(new Euc<T>(cset[i],C), 0, R);
+            }
+            return res;
+        }
+
+        assert(cset.size() > numPivots);
+        assert(eset->size() > numPivots);
+        Pivot* ppivot = nullptr;
+        for (size_t i = 0; i <numPivots; ++i) {
+            float bestDist = -1;
+            for (size_t j = 0; j < cset.size(); ++j) {
+                auto pe = new Euc<T>(cset[j],C);
+                auto stat = evaluate(pe, *eset, C);
+
+                if (stat.mean() > bestDist){
+                    bestDist = stat.mean();
+                    ppivot = new Pivot(pe, 0, R);
+                    res[i] = ppivot;
+                    auto idx = size_t((cset[j] - m.getData())/C);
+                    ppivot->index = idx;
+                }
+            }
+        }
+        delete eset;
         return res;
     }
+
     void scan(Data *queryPoint, int i, hi::HIQueryResults& qr) override {
 //    leafPoints->scan(queryPoint, depth, parent->queryResults);
         auto qp = static_cast<Euc<T>*>(queryPoint);
@@ -228,9 +334,14 @@ public:
         return new EucDataManager<T>(getDat(), getRows(), getCols(), true, false, this->idxs);
     }
 
-    Stat calculateVariance() override {
-        return statutil::calculateVariance(getDat(), getRows(), getCols());
+    Stat calculateStat() override {
+        return statutil::calculateStats(getDat(), getRows(), getCols());
     }
+
+    tstat<dist_type> calculateStat(Pivot* ppivot) override {
+        return stat(static_cast<Euc<T>*>(ppivot->ppivot));
+    }
+
     bool isEuclidean() override{
         return true;
     }

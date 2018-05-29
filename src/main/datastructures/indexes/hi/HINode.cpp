@@ -150,7 +150,7 @@ std::vector<DecideResult *> HINode::decide(DataManager* pdata, const HIBuildPara
 }
 
 void HINode::build(const HIBuildParams& params, DataManager *pdata, int depth) {
-//    dprintf("HI::Build()   ---   depth=%d size=%ld\n", depth, pdata->getRows());
+//    dprintf("HI::Build()   ---   depth=%d size=%ld    ml=%zu\n", depth, pdata->getRows(),   params.maxLeafPoints);
     auto bparms = getpBuildParms();
     if (depth >= bparms->maxDepth)
         return;

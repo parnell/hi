@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
 
     hi::HITree tree(new DataManager(m, R, C, true,true, 0));
 //    dprintca(m, R, C);
-    tree.buildParams.lshVarThreshold = std::numeric_limits<float>::infinity();;
+    tree.buildParams.lshVarThreshold = std::numeric_limits<float>::infinity();
     tree.buildParams.maxPivots = 1;
     tree.buildParams.maxLeafPoints = 3;
     tree.build();

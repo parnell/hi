@@ -27,5 +27,8 @@ T sqr(T x) { return x * x; }
 #define TIME_MS 1000000
 const long long REBALANCE_TIME_NS = TIME_MS * 500;
 
+const size_t PIV_MAX_EVAL_SAMPLES = 5000;
+const size_t PIV_MAX_CAND_SAMPLES = 20;
+
 
 #endif //HI_GLOBAL_INCLUDES_H

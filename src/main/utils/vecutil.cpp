@@ -4,16 +4,6 @@
 #include <random>
 
 namespace vecutil {
-std::unordered_set<size_t> pickSet(size_t N, int k, std::mt19937 &gen) {
-    std::unordered_set<size_t> elems;
-    for (size_t r = N - k; r < N; ++r) {
-        int v = std::uniform_int_distribution<>(0, r)(gen);
-        if (!elems.insert(v).second) {
-            elems.insert(r);
-        }
-    }
-    return elems;
-}
 
 std::vector<size_t> pick(size_t N, int k) {
     std::random_device rd;
@@ -29,6 +19,10 @@ std::vector<size_t> pick(size_t N, int k) {
 
 #if COMPILE_TESTS
 #include "gtest/gtest.h"
+#include "testutil.hpp"
+#include "../datastructures/rm/M.hpp"
+#include "../dprint.hpp"
+#include "Timer.hpp"
 
 namespace vecutil{
 TEST(utils, splitvec)
@@ -75,6 +69,40 @@ TEST(utils, randpickptrs) {
     }
     auto r= randRowPointers<int>(R, C, k, m);
     EXPECT_EQ(r.size(), k);
+}
+
+
+TEST(utils, fftpicks) {
+    const int R = 10;
+    const int C = 2;
+    int k = 4;
+    auto m = testutil::makeM<float>(R,C);
+
+    auto res= fft<float, dist_type>(R, C, k, m, rm::M<float>::dist);
+    EXPECT_EQ(res.size(), k);
+    EXPECT_EQ(*res[0], 0);
+    EXPECT_EQ(*res[1], 9);
+    EXPECT_EQ(*res[2], 1);
+    EXPECT_EQ(*res[3], 8);
+}
+
+TEST(utils, speed_fft_vs_random) {
+    /// (1k,5k), 100, 14.  (6.48ms, 27ms)
+    /// (1k,5k), 100, 5.  (2.61ms, 8ms) linear with k (as expected)
+    const int R = 5000;
+    const int C = 100;
+    int k = 5;
+    auto m = testutil::makeM<float>(R,C);
+    {
+//        Timer t("fft");
+        auto res = fft<float, dist_type>(R, C, k, m, rm::M<float>::dist);
+        EXPECT_EQ(res.size(), k);
+    }
+    {
+//        Timer t("random");
+        auto res = randRowPointers<float>(R, C, k, m);
+        EXPECT_EQ(res.size(), k);
+    }
 }
 
 }

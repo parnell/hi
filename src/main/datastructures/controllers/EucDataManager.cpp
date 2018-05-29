@@ -165,7 +165,7 @@ TEST(controllers, DM_test_sort)
     for (size_t pidx = 0; pidx < R; ++pidx) {
         auto pe = new Euc<float>(&m[pidx * C], C);
         Pivot p(pe, pidx, R);
-        dat.sort(p);
+        dat.sort(p, true);
         EXPECT_EQ(dat.idxs[0], pidx);
     }
 }

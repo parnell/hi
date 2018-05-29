@@ -21,7 +21,8 @@ struct tstat {
         MEAN = 16,
         DEV = 32,
         VAR = 64,
-        ALL = VAR *2 -1
+        MIN2 = 128,
+        ALL = MIN2 *2 -1
     };
 
     friend std::ostream& operator<<(std::ostream& os, tstat & stat){
@@ -29,7 +30,7 @@ struct tstat {
         return os;
     }
     size_t _count;
-    T _stat[4];
+    T _stat[5];
     bool _dirty_var;
     bool _dirty_dev;
     float _var;
@@ -37,11 +38,13 @@ struct tstat {
     std::string name;
 
     tstat () : _dirty_var(true), _dirty_dev(true), _count(0),
-               _stat{0,0,std::numeric_limits<T>::max(),std::numeric_limits<T>::min()}{
+               _stat{0,0,std::numeric_limits<T>::max(),
+                     std::numeric_limits<T>::min(),std::numeric_limits<T>::max()}{
 
     }
     tstat (const char* name) : _dirty_var(true), _dirty_dev(true),  _count(0),
-                               _stat{0,0,std::numeric_limits<T>::max(),std::numeric_limits<T>::min()}, name(name){
+                               _stat{0,0,std::numeric_limits<T>::max(),
+                                     std::numeric_limits<T>::min(),std::numeric_limits<T>::max()}, name(name){
 
     }
 
@@ -49,7 +52,13 @@ struct tstat {
         ++_count;
         _stat[0] += val;
         _stat[1] += val*val;
-        _stat[2] = std::min(_stat[2], val);
+        /// Update min and second min
+        if (val < _stat[2]){
+            _stat[4] = _stat[2];
+            _stat[2] = val;
+        } else if (val < _stat[4] && val != _stat[2]){
+            _stat[4] = val;
+        }
         _stat[3] = std::max(_stat[3], val);
         _dirty_var=true;
         _dirty_dev = true;
@@ -65,6 +74,10 @@ struct tstat {
 
     inline T min() const{
         return _stat[2];
+    }
+
+    inline T min2() const{
+        return _stat[4];
     }
 
     inline T max() const{
@@ -122,6 +135,15 @@ struct tstat {
     std::ostream& print(std::ostream &out){
         return print(name.c_str(), out);
     }
+
+    float ratio() {
+        if (max() == 0) return 0;
+        return (1.0f - (static_cast<float>(min2()) / max()));
+//        float f = ( min2() == 0 ? (1.0f - (static_cast<float>(min2())/max()) ) : (1.0f - (static_cast<float>(min2())/max()) )/min2() );
+//        std::cout << "   " << min() << "   " <<  min2() << "   " << max() << "           "<< "   " << f << "   "  << count() << std::endl;
+//        return min2() == 0 ? (1.0f - (static_cast<float>(min2())/max()) ) : (1.0f - (static_cast<float>(min2())/max()) )/min2();
+//        return (1.0f - (static_cast<float>(min2())/max()) )/min2();
+    }
 };
 
 
@@ -136,7 +158,24 @@ struct Stat {
     std::vector<float> mean;
     std::vector<float> var;
 
+    float summean(){
+        float _sum = 0.0f;
+        #pragma om parallel for shared(_sum, mean) reduction(+: _sum)
+        for (size_t i = 0; i < mean.size(); ++i) {
+            _sum += mean[i];
+        }
+        return _sum;
+    }
+    float sumvar(){
+        float _sum = 0.0f;
+        #pragma om parallel for shared(_sum, var) reduction(+: _sum)
+        for (size_t i = 0; i < var.size(); ++i) {
+            _sum += var[i];
+        }
+        return _sum;
+    }
     void resize(size_t size, size_t D);
+
 
 };
 
