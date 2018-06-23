@@ -12,16 +12,14 @@ const size_t END_SAMPLE_SIZE = 10000;
 std::vector<DecideResult*> IndexDecider::decide(DataManager *pdata, int maxPivots, float lshVarThreshold, int depth) {
     const size_t R = pdata->getRows();
 //    const size_t C = pdata->getCols();
-    std::vector<Pivot*> onepivot = pdata->pickPivots(1);
+    std::vector<Pivot*> pivots = pdata->pickPivots(maxPivots);
 //    Stat stat = pdata->calculateStat();
 
-    tstat<dist_type> stat = pdata->calculateStat(onepivot[0]);
+    tstat<dist_type> stat = pdata->calculateStat(pivots[0]);
 //    dprintf(" depth=%d\tvar=%f\tsize=%ld\tratio=%f\tthresh=%f\n", depth, stat.var(), R, stat.ratio(), lshVarThreshold);
     if (stat.ratio() < lshVarThreshold){
 //        auto pivots = vecutil::randRowPointers<Dat>(R, C, maxPivots, pdata->getDat());
 
-        auto pivots = pdata->pickPivots(maxPivots-1);
-        pivots.emplace_back(onepivot[0]);
         std::vector<DecideResult*> res(pivots.size());
         size_t idx = 0;
         std::vector<DataManager*> cuts;
@@ -36,11 +34,17 @@ std::vector<DecideResult*> IndexDecider::decide(DataManager *pdata, int maxPivot
 
             pdata->sort(pivot, true);
             pdr->indexGroup = IG_SPATIAL;
+            bool dataHasPivot = pivot.index == pdata->idxs[0];
+//            assert(dataHasPivot);
             /// Partition
             /// partition pivot index
             auto pivotdat = pdata->sliceData(0,1);
             assert(pivotdat->idxs.size() == 1);
             auto pidx = pivotdat->idxs[0];
+//            if (pivot.index != pidx){
+//                std::cout << "eh"<< std::endl;
+//            }
+//            assert(pivot.index == pidx);
             pivot.index = pidx;
             /// split partition regions
             auto *psubdat = pdata->sliceData(1, R / 2 + 1);
@@ -51,8 +55,6 @@ std::vector<DecideResult*> IndexDecider::decide(DataManager *pdata, int maxPivot
             d.emplace_back(psubdat2);
             assert(d[0]->getRows() + d[1]->getRows() + 1 == R);
             assert(pdata->idxs.size() == R);
-//            assert(pivot.distances.size() == R);
-//            assert(pdr->idxpivot.second.size() > 0);
             ++idx;
             delete pivotdat;
         }
@@ -78,11 +80,12 @@ TEST(controllers, ID_test_decide)
 {
     unsigned int R = 1024;
     unsigned int C = 2;
+    int npivots = 1;
 
     auto m = testutil::makeM<float>(R, C);
     EucDataManager<float> edat(m, R,C, false,true, 0);
     IndexDecider id;
-    auto drs = id.decide(&edat, 1, 1000000, 0);
+    auto drs = id.decide(&edat, npivots, 1000000, 0);
     size_t total = 0;
     size_t idxtotal = 0;
 
@@ -97,8 +100,31 @@ TEST(controllers, ID_test_decide)
 //            dcoutl( * dynamic_cast<EucDataManager<float>*>(dat));
         }
     }
-    EXPECT_EQ(total+1, R);
-    EXPECT_EQ(idxtotal+1, R);
+    EXPECT_EQ(total+npivots, R);
+    EXPECT_EQ(idxtotal+npivots, R);
 }
+
+//
+//TEST(controllers, ID_test_decide_multipivot)
+//{
+//    unsigned int R = 1024;
+//    unsigned int C = 2;
+//    int npivots = 1;
+//    auto m = testutil::makeM<float>(R, C);
+//    EucDataManager<float> edat(m, R,C, false,true, 0);
+//    IndexDecider id;
+//    auto drs = id.decide(&edat, npivots, 1000000, 0);
+//    size_t total = 0;
+//    size_t idxtotal = 0;
+//
+//    for (auto & pdr : drs){
+//        for (auto& dat : pdr->data){
+//            total += dat->getRows();
+//            idxtotal += dat->idxs.size();
+//        }
+//    }
+//    EXPECT_EQ(total+npivots, R);
+//    EXPECT_EQ(idxtotal+npivots, R);
+//}
 
 #endif

@@ -10,3 +10,7 @@ std::list<WorkItem*>& Job::getWorkItems() {
 void Job::addWorkItem(WorkItem& workItem){
     unfinished.push_back(&workItem);
 }
+
+void Job::addWorkItem(WorkItem *pWorkItem) {
+    unfinished.push_back(pWorkItem);
+}

@@ -122,10 +122,26 @@ public:
         is.close();
     }
 
+
     /**
     * Load the Matrix from a binary file.
+     *
+     *     std::vector<T> vec((std::istream_iterator<T>(ifs)),  std::istream_iterator<T>());
+    ifs.close();
+
+    size_t header[3];
+    header[0] = sizeof(T);
+    header[1] = size;
+    header[2] = dim;
+    std::ofstream ofs(ofn,std::ios::out | std::ofstream::binary);
+    ofs.write((char *) header, sizeof header);
+    std::copy(vec.begin(),vec.end(),std::ostreambuf_iterator<char>(ofs));
     */
     void load(const std::string &path, size_t only, size_t nsplits) {
+        if (nsplits == 1){
+            load(path);
+            return;
+        }
         std::ifstream is(path.c_str(), std::ios::binary);
         size_t tR;
 

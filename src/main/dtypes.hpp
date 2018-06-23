@@ -8,6 +8,7 @@ typedef float dtype;
 typedef float dist_type;
 typedef float itype; /// internal euc data representation
 
+
 #elif __DATA_TYPE__ == __STRING_TYPE__
 typedef char Dat;
 typedef int dist_type;
@@ -23,7 +24,7 @@ typedef bool itype;
 #define dtype_inf "%f"
 
 enum IndexGroup {
-    IG_SPATIAL, IG_LSH, IG_LEAF, IG_NONE
+    IG_SPATIAL, IG_LSH, IG_NONE
 };
 
 enum IndexType {

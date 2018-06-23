@@ -9,6 +9,10 @@
 #include <numeric>
 #include <algorithm>    // std::min
 
+#ifndef assert
+    #define assert(x)
+#endif
+
 namespace vecutil{
 
 inline std::unordered_set<size_t> pickSet(size_t N, int k, std::mt19937& gen){
@@ -70,9 +74,10 @@ inline std::vector<T*> randRowPointers(const size_t N, const size_t C, const int
     auto us = pickSet(N,k, gen);
     size_t i=0;
     #pragma omp parallel for
-    for (auto iter = us.begin();iter != us.end(); ++iter, ++i){
+    for (auto iter = us.begin();iter != us.end(); ++iter){
         result[i] = &pelems[*iter*C];
         assert(result[i] - pelems < N*C);
+        ++i;
     }
     return result;
 }

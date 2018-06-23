@@ -112,7 +112,7 @@ set(SOURCE_FILES src/main/datastructures/rm/WorkItem.cpp
         src/main/utils/fileutil.cpp src/main/utils/fileutil.hpp src/main/datastructures/controllers/EucDataManager.cpp src/main/datastructures/controllers/EucDataManager.hpp
         src/main/datastructures/datatypes/EucBare.cpp src/main/datastructures/datatypes/EucBare.hpp src/main/config.hpp
         src/main/datastructures/controllers/FDNADataManager.cpp src/main/datastructures/controllers/FDNADataManager.hpp
-        src/main/datastructures/controllers/MetricDataManager.cpp src/main/datastructures/controllers/MetricDataManager.hpp)
+        src/main/datastructures/controllers/MetricDataManager.cpp src/main/datastructures/controllers/MetricDataManager.hpp src/main/file_loader.hpp)
 
 
 foreach(program ${PROGRAMS} ${TEST_PROGRAMS} ${T3PROGRAMS} ${T2PROGRAMS})

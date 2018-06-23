@@ -30,6 +30,7 @@ public:
     virtual std::list<WorkItem*>& getWorkItems();
 
     virtual void addWorkItem(WorkItem& workItem);
+    virtual void addWorkItem(WorkItem* pWorkItem);
 
 
     virtual std::string toString() const{

@@ -44,6 +44,7 @@ class WorkItem {
         ar & parentid;
         ar & jobid;
         ar & nranks;
+        ar & node;
     }
 
 protected:
@@ -51,6 +52,7 @@ protected:
     size_t jobid;
     int parentid;
     int nranks;
+    int node = -1;
 
 public:
     WorkItem(): id(nitems++), jobid(0), parentid(0), nranks(world.size()){}
@@ -70,6 +72,15 @@ public:
     friend std::ostream& operator<<(std::ostream& os, WorkItem const& o) {
         return os << o.toString();
     }
+
+    int getNode() const {
+        return node;
+    }
+
+    void setNode(int node) {
+        this->node = node;
+    }
+
 };
 
 

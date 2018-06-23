@@ -172,10 +172,6 @@ void HINode::build(const HIBuildParams& params, DataManager *pdata, int depth) {
         const IndexGroup group = pdr->indexGroup;
 
         switch (group) {
-            case IG_LEAF: {
-
-            }
-                break;
             case IG_SPATIAL: {
 //                dprintf("   HI::Build --- SpatialWrapper  depth=%d  size=%lu\n", depth, pnewdat->getRows());
                 if (!ppivots){
@@ -230,6 +226,8 @@ void HINode::build(const HIBuildParams& params, DataManager *pdata, int depth) {
                 plsh->hash(pnewdat->getDat(), R, C);
                 break;
             }
+            case IG_NONE:
+                BOOST_VERIFY_MSG(false, "IG_NONE case not be handled");
         }
         delete pdr;
     }

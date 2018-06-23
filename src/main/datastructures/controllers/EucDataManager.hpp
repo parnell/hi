@@ -279,6 +279,8 @@ public:
                     ppivot = new Pivot(pe, 0, R);
                     res[i] = ppivot;
                     auto idx = size_t((cset[j] - m.getData())/C);
+//                    dprintf(" idx=%zu   ppivot=", idx);
+//                    dprintca(pe->getDat(), 1, C);
                     ppivot->index = idx;
                 }
             }

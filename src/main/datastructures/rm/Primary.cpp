@@ -56,6 +56,8 @@ void Primary::runJobs(){
             std::vector<WorkItem*> v{ std::begin(allitems), std::end(allitems) };
             for (int i=0, sendto=1; i< nworkers;++i, ++sendto){
                 std::vector<WorkItem *> send = vecutil::split(v, nworkers, i);
+                for (auto pwi : send) {
+                    pwi->setNode(sendto); }
                 std::cout << " >>> " << workerIds[sendto % nworkers] << " " << send.size() << " " << allitems.size() << std::endl;
                 sends.push_back(world.isend(workerIds[sendto % nworkers], TagType::WORK, send));
                 jh.sendingWorkTo(sendto, send.size());

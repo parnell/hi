@@ -103,14 +103,14 @@ int __main(int argc, char** argv) {
 
     if (world.rank() == 0) {
         auto pj = new hi::HIJob();
-//        TestJob j(10000000, 4);
 
         if (build && query) {
             auto bi = new hi::HIBuildItem(buildFilename, pj->id);
             pj->addWorkItem(*bi);
         } else if (build){
-            auto bi = new hi::HIBuildItem(buildFilename, pj->id);
-            pj->addWorkItem(*bi);
+            pj->addBuildWorkItems(buildFilename, wsize);
+//            auto bi = new hi::HIBuildItem(buildFilename, pj->id);
+//            pj->addWorkItem(*bi);
         } else if (query){
 //            m.query();
         }

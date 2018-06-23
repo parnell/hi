@@ -42,6 +42,7 @@ TEST(controllers, DM_test_load)
     std::string filename = sutil::sformat("%s/../data/tests/gaussian__d=20_s=10000_nclus=1_var=0.1.bin",
                                           CMAKE_CURRENT_BINARY_DIR);
     auto pmdat = EucDataManager<float>::loadData(filename);
+    EXPECT_FLOAT_EQ(0.723430f, pmdat->getRow(0)[0]);
     EXPECT_EQ(pmdat->getRows(), 10000);
 }
 
