@@ -72,7 +72,7 @@ size_t HITree::size() const {
 #include <limits>
 
 
-TEST(hi, HITree_test_serialization_blank)
+TEST(hit, HITree_test_serialization_blank)
 {
     const int R = 64;
     const int C = 2;
@@ -95,7 +95,7 @@ TEST(hi, HITree_test_serialization_blank)
 }
 
 
-TEST(hi, HITree_test_serialization_leaf)
+TEST(hit, HITree_test_serialization_leaf)
 {
     const int R = 64;
     const int C = 2;
@@ -122,7 +122,7 @@ TEST(hi, HITree_test_serialization_leaf)
     EXPECT_EQ(root->isLeaf(), true);
 }
 
-TEST(hi, HITree_test_serialization_save)
+TEST(hit, HITree_test_serialization_save)
 {
     const int R = 129;
     const int C = 2;
@@ -158,7 +158,7 @@ TEST(hi, HITree_test_serialization_save)
 }
 
 
-TEST(hi, HITree_test_serialization_load)
+TEST(hit, HITree_test_serialization_load)
 {
     const int R = 129;
 
@@ -183,7 +183,7 @@ TEST(hi, HITree_test_serialization_load)
     EXPECT_EQ(child2->getLeafPoints()->getRows(), R/2);
 }
 
-TEST(hi, HITree_test_build_serialization)
+TEST(hit, HITree_test_build_serialization)
 {
     const int R = 17;
     const int C = 2;
@@ -252,7 +252,7 @@ TEST(hi, HITree_test_build_serialization)
 }
 #if __DATA_TYPE__ == __VEC_TYPE__
 
-TEST(hi, HITree_test_build_query_spatial)
+TEST(hit, HITree_test_build_query_spatial)
 {
     const int R = 4096;
     const int C = 20;
@@ -330,7 +330,7 @@ TEST(hi, HITree_test_build_query_spatial)
 }
 
 
-TEST(hi, HITree_test_load_from_file)
+TEST(hit, HITree_test_load_from_file)
 {
     std::string filename = sutil::sformat("%s/../data/tests/gaussian__d=20_s=10000_nclus=1_var=0.1.bin",
                                           CMAKE_CURRENT_BINARY_DIR);
@@ -340,7 +340,7 @@ TEST(hi, HITree_test_load_from_file)
 //    tree.build();
 }
 
-TEST(hi, HITree_test_build_query_LSH)
+TEST(hit, HITree_test_build_query_LSH)
 {
     const int R = 4096;
     const int C = 2;
@@ -396,7 +396,7 @@ TEST(hi, HITree_test_build_query_LSH)
 }
 
 
-TEST(hi, HITree_test_LSH_sliced_idxs)
+TEST(hit, HITree_test_LSH_sliced_idxs)
 {
     const int R = 101;
     const int C = 2;

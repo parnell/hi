@@ -33,9 +33,21 @@
 namespace mpi = boost::mpi;
 
 BOOST_CLASS_EXPORT_GUID(WorkItem, "WorkItem");
-BOOST_CLASS_EXPORT_GUID(hi::HIBuildItem, "HIBuildItem");
-BOOST_CLASS_EXPORT_GUID(ReturnResult, "ReturnResult");
 
+#if __DATA_TYPE__ == __VEC_TYPE__
+typedef float Dat;
+#define DEF_DM_CLASS EucDataManager<Dat>
+BOOST_CLASS_EXPORT_GUID(hi::HIBuildItem<DEF_DM_CLASS>, "HIBuildItem");
+
+#elif __DATA_TYPE__ == __STRING_TYPE__
+typedef char Dat;
+//#include "datastructures/controllers/FDNADataManager.hpp"
+//#define DEF_DM_CLASS FDNADataManager
+#elif __DATA_TYPE__ == __GRAPH_TYPE__
+
+#endif
+
+BOOST_CLASS_EXPORT_GUID(ReturnResult, "ReturnResult");
 
 int __main(int argc, char** argv) {
     unsigned int nthreads = boost::thread::hardware_concurrency();
@@ -102,10 +114,10 @@ int __main(int argc, char** argv) {
     Timer t(sutil::sformat("%d", world.rank()));
 
     if (world.rank() == 0) {
-        auto pj = new hi::HIJob();
+        auto pj = new hi::HIJob<DEF_DM_CLASS>();
 
         if (build && query) {
-            auto bi = new hi::HIBuildItem(buildFilename, pj->id);
+            auto bi = new hi::HIBuildItem<DEF_DM_CLASS>(buildFilename, pj->id, -1, wsize);
             pj->addWorkItem(*bi);
         } else if (build){
             pj->addBuildWorkItems(buildFilename, wsize);
@@ -145,4 +157,4 @@ int main(int argc, char** argv) {
 //    argv.push_back(nullptr);
 //    return __main(static_cast<int>(argv.size() - 1), argv.data());
 //}
-//#endif
+#endif

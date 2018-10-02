@@ -10,6 +10,7 @@ project(hi)
 ### to pass in from command line Example: cmake .. -D__DATA_TYPE__=1
 if(NOT DEFINED __DATA_TYPE__)
     set(__DATA_TYPE__ 0)
+#    set(__DATA_TYPE__ 1)
 endif()
 
 set(CMAKE_CXX_STANDARD 14)

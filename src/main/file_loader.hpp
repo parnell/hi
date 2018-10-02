@@ -22,16 +22,17 @@ DataManager* loadFile(const std::string& filename, size_t only, size_t nsplits){
 
 
 #elif __DATA_TYPE__ == __STRING_TYPE__
+#include "datastructures/controllers/FDNADataManager.hpp"
 
 DataManager* loadFile(const std::string& filename){
-    auto pdataManager = FDNADataManager::loadData(filename);
-    std::cout << " HIBuild loaded\tR=" << pdataManager->getRows() << "\tC=" << pdataManager->getCols() << std::endl;
+    auto pdataManager = FDNADataManager::loadData(filename, 0, 0);
+    std::cout << " HIBuild loaded\tR=" << pdataManager->getRows() << "\tR=" << pdataManager->getRows() << std::endl;
     return pdataManager;
 }
 
 DataManager* loadFile(const std::string& filename, size_t only, size_t nsplits){
-    auto pdataManager = FDNADataManager::loadData(filename);
-    std::cout << " HIBuild loaded\tR=" << pdataManager->getRows() << "\tC=" << pdataManager->getCols() << std::endl;
+    auto pdataManager = FDNADataManager::loadData(filename, 0, 0);
+    std::cout << " HIBuild loaded\tR=" << pdataManager->getRows() << "\tR=" << pdataManager->getRows() << std::endl;
     return pdataManager;
 }
 

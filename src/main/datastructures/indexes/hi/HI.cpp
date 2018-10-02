@@ -20,20 +20,21 @@
 #include <limits>
 
 TEST(hi, HI_test_load)
+{//qwfPk3eaors9
+    std::string filename = sutil::sformat("%s/../data/tests/gaussian__d=20_s=10000_nclus=1_var=0.1.bin", CMAKE_CURRENT_BINARY_DIR);
+    hi::HI<EucDataManager<float>> hit;
+    Timer("single Time");
+    hit.build(filename, 1, 1000);
+    EXPECT_EQ(hit.size(), 10000);
+}
+TEST(hi, HI_test_load_split)
 {
     std::string filename = sutil::sformat("%s/../data/tests/gaussian__d=20_s=10000_nclus=1_var=0.1.bin", CMAKE_CURRENT_BINARY_DIR);
-    {
-        hi::HI<EucDataManager<float>> hit;
-//        Timer("single Time");
-        hit.build(filename, 1, 1000);
-        EXPECT_EQ(hit.size(), 10000);
-    }
-    {
-        hi::HI<EucDataManager<float>> hit;
-//        Timer("Split Time");
-        hit.build(filename, 6, 1000);
-        EXPECT_EQ(hit.size(), 10000);
-    }
+    hi::HI<EucDataManager<float>> hit;
+    Timer("Split Time");
+    hit.build(filename, 6, 1000);
+    EXPECT_EQ(hit.size(), 10000);
 }
+
 
 #endif

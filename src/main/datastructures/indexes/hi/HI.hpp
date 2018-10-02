@@ -47,7 +47,7 @@ public:
 
     void build(const std::string& filename, size_t nnodes, int max_depth) {
         unsigned int nthreads = boost::thread::hardware_concurrency();
-#pragma omp parallel for
+        #pragma omp parallel for
         for (int i = 0; i < nnodes; ++i) {
             DataManager* pdat = DM_CLASS::loadData(filename, i, nnodes);
             _build(pdat, nnodes, nthreads, max_depth, i);
@@ -61,6 +61,7 @@ public:
         }
         return s;
     }
+
     friend std::ostream &operator<<(std::ostream &os, HI &hi){
         size_t sz = 0;
         for (auto& ptree : hi.getTrees()){
